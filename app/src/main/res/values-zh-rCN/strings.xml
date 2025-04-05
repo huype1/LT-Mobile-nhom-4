@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name" translatable="false">Locket</string>
+    <string name="login">登录</string>
+    <string name="register">登记</string>
+    <string name="welcome_message">直接来自朋友的图像，就在您的主屏幕上</string>
+    <string name="signup_button">没有帐户？报名</string>
+    <string name="login_button">已经有一个帐户？登录</string>
+    <string name="username">用户名</string>
+    <string name="full_name">姓名</string>
+    <string name="phone_number">电话号码</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="password">密码</string>
+    <string name="confirm_password">确认密码</string>
+    <string name="register_success">成功创建帐户！</string>
+    <string name="register_fail">创建帐户失败！</string>
+    <string name="username_existed">用户名已经存在。请选择另一个。</string>
+    <string name="login_fail">登录失败！检查您的帐户或互联网连接</string>
+    <string name="logout">注销</string>
+    <string name="error_email_required">请输入有效的电子邮件地址</string>
+    <string name="error_password_required">需要密码（至少6个字符）</string>
+    <string name="error_confirm_password_required">需要确认密码</string>
+    <string name="error_passwords_not_match">密码不匹配</string>
+    <string name="error_phone_required">需要电话号码</string>
+    <string name="error_username_required">需要用户名</string>
+    <string name="error_fullname_required">需要全名</string>
+    <string name="checking_username">检查用户名的可用性...</string>
+    <string name="forgot_password">输入您的电子邮件，然后单击此处更改密码</string>
+    <string name="welcome_description">Locket通过共同的时刻和回忆将您与亲人联系</string>
+    <string name="app_logo_description">应用徽标</string>
+</resources>

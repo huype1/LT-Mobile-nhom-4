@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name" translatable="false">Locket</string>
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
+    <string name="welcome_message">Hình ảnh trực tiếp từ bạn bè, ngay tại màn hình chính của bạn</string>
+    <string name="signup_button">Không có tài khoản\? Đăng ký</string>
+    <string name="login_button">Đã có một tài khoản\? Đăng nhập</string>
+    <string name="username">Tên người dùng</string>
+    <string name="full_name">Tên đầy đủ</string>
+    <string name="phone_number">Số điện thoại</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="register_success">Tạo tài khoản thành công!</string>
+    <string name="register_fail">Tạo tài khoản không thành công!</string>
+    <string name="username_existed">Tên người dùng đã tồn tại. Vui lòng chọn người khác.</string>
+    <string name="login_fail">Đăng nhập không thành công! Kiểm tra tài khoản của bạn hoặc kết nối Internet của bạn</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="error_email_required">Vui lòng nhập địa chỉ email hợp lệ</string>
+    <string name="error_password_required">Mật khẩu là bắt buộc (tối thiểu 6 ký tự)</string>
+    <string name="error_confirm_password_required">Xác nhận mật khẩu là bắt buộc</string>
+    <string name="error_passwords_not_match">Mật khẩu không khớp với nhau</string>
+    <string name="error_phone_required">Số điện thoại là bắt buộc</string>
+    <string name="error_username_required">Tên người dùng là bắt buộc</string>
+    <string name="error_fullname_required">Tên đầy đủ là bắt buộc</string>
+    <string name="checking_username">Kiểm tra tính khả dụng của tên người dùng ...</string>
+    <string name="forgot_password">Nhập email của bạn sau đó bấm vào đây để thay đổi mật khẩu của bạn</string>
+    <string name="welcome_description">Locket kết nối bạn với những người thân yêu của bạn thông qua những khoảnh khắc và ký ức được chia sẻ</string>
+    <string name="app_logo_description">Logo ứng dụng</string>
+</resources>

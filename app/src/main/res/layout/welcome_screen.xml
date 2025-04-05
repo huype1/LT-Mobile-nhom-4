@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="#121212">
+
+    <TextView
+            android:id="@+id/appTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="#FFD700"
+            android:layout_gravity="center"
+            android:layout_marginTop="48dp" />
+
+    <ImageView
+            android:id="@+id/appLogoImageView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:src="@drawable/logo"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:background="#FCF5FD" />
+
+    <TextView
+            android:id="@+id/appDescriptionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_description"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:textAlignment="center"
+            android:layout_marginBottom="48dp" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="24dp">
+
+        <Button
+                android:id="@+id/loginButtonWelcome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/login"
+                android:textColor="#121212"
+                android:backgroundTint="#FFD700"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+        <Button
+                android:id="@+id/registerButtonWelcome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/register"
+                android:textColor="#FFD700"
+                android:backgroundTint="#424242"
+                android:padding="12dp" />
+    </LinearLayout>
+
+    <!-- Fragment Container -->
+    <FrameLayout
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+</LinearLayout>

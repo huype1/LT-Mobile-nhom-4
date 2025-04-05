@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="#121212">
+
+    <!-- Large Title -->
+    <TextView
+            android:id="@+id/largeTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/register"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:textColor="@color/app"
+            android:layout_marginBottom="24dp" />
+
+    <EditText
+            android:id="@+id/usernameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/username"
+            android:inputType="text"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp" />
+    <EditText
+            android:id="@+id/fullNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/full_name"
+            android:inputType="text"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp" />
+    <EditText
+            android:id="@+id/phoneNumberEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/phone_number"
+            android:inputType="phone"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp" />
+
+    <EditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp" />
+
+    <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp" />
+
+    <EditText
+            android:id="@+id/confirmPasswordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/confirm_password"
+            android:inputType="textPassword"
+            android:backgroundTint="#9E9E9E"
+            android:textColorHint="#9E9E9E"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp" />
+
+    <Button
+            android:id="@+id/registerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/register"
+            android:textColor="#121212"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/app" />
+
+    <TextView
+            android:id="@+id/signUpTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/login_button"
+            android:textColor="@color/app"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+</LinearLayout>

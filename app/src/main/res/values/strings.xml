@@ -1,3 +1,30 @@
 <resources>
-    <string name="app_name">LT_Mobile_Nhom4</string>
+    <string name="app_name" translatable="false">Locket</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="welcome_message">Images directly from friends, right at your home screen</string>
+    <string name="signup_button">Don\'t have an account? Sign up</string>
+    <string name="login_button">Already have an account? Login</string>
+    <string name="username">Username</string>
+    <string name="full_name">Full name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register_success">Create account successfully!</string>
+    <string name="register_fail">Create account failed!</string>
+    <string name="username_existed">Username already exists. Please choose another.</string>
+    <string name="login_fail">Login failed! Check your account or your internet connection</string>
+    <string name="logout">Log out</string>
+    <string name="error_email_required">Please enter a valid email address</string>
+    <string name="error_password_required">Password is required (minimum 6 characters)</string>
+    <string name="error_confirm_password_required">Confirm password is required</string>
+    <string name="error_passwords_not_match">Passwords don\'t match</string>
+    <string name="error_phone_required">Phone number is required</string>
+    <string name="error_username_required">Username is required</string>
+    <string name="error_fullname_required">Full name is required</string>
+    <string name="checking_username">Checking username availability...</string>
+    <string name="forgot_password">Type your email then click here to change your password</string>
+    <string name="welcome_description">Locket connects you with your loved ones through shared moments and memories</string>
+    <string name="app_logo_description">App Logo</string>
 </resources>

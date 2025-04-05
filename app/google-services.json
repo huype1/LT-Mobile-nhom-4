@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "647768355555",
+    "project_id": "locket-clone-b9856",
+    "storage_bucket": "locket-clone-b9856.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:647768355555:android:e7e939ff67016124fc4bd6",
+        "android_client_info": {
+          "package_name": "com.example.lt_mobile_nhom4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw3ViQPtUlgu-O81LEyiAdYCBzwatXEh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
