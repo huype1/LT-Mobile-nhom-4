@@ -8,18 +8,24 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.lt_mobile_nhom4.R;
+import com.example.lt_mobile_nhom4.models.FriendModel;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Setter;
+
+@Setter
 public class FriendDialogAdapter extends BaseAdapter {
     private Context context;
-    private List<Friend> friendList;
+    private List<FriendModel> friendList;
 
-    public FriendDialogAdapter(Context context, List<Friend> friendList) {
+    public FriendDialogAdapter(Context context) {
         this.context = context;
-        this.friendList = friendList;
+        this.friendList = new ArrayList<>();
     }
 
     @Override
@@ -42,29 +48,35 @@ public class FriendDialogAdapter extends BaseAdapter {
         return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 
+    public void setFriendList(List<FriendModel> friendList) {
+        this.friendList = friendList;
+        notifyDataSetChanged();
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Friend friend = friendList.get(position);
+        FriendModel friend = friendList.get(position);
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.dialog_item_friend, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_friend, parent, false);
         }
 
-        ImageView imageAvatar = convertView.findViewById(R.id.imageAvatar);
-        TextView textName = convertView.findViewById(R.id.textFriendName);
-        ImageView imageArrow = convertView.findViewById(R.id.imageArrow);
+        ImageView friendAvatar = convertView.findViewById(R.id.friendAvatar);
+        TextView friendUsername = convertView.findViewById(R.id.friendUsername);
+        TextView friendFullName = convertView.findViewById(R.id.friendFullName);
 
-        String rawName = friend.getName().toLowerCase();
-        String imageName = removeAccent(rawName);
-        int resId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
+        // Set user data
+        friendUsername.setText("@" + friend.getUsername());
+        friendFullName.setText(friend.getFullName());
 
-        if (resId != 0) {
-            imageAvatar.setImageResource(resId);
+        // Load avatar with Glide if available
+        if (friend.getAvatarUrl() != null && !friend.getAvatarUrl().isEmpty()) {
+            Glide.with(context)
+                .load(friend.getAvatarUrl())
+                .placeholder(R.drawable.person_24px)
+                .into(friendAvatar);
         } else {
-            imageAvatar.setImageResource(R.drawable.person_24px);
+            friendAvatar.setImageResource(R.drawable.person_24px);
         }
-
-        textName.setText(friend.getName());
 
         return convertView;
     }

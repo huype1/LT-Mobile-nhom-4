@@ -57,4 +57,12 @@
     <string name="friend_request_accepted_content">%1$s 已接受您的好友请求。</string>
     <string name="add_description">添加消息</string>
     <string name="history">历史</string>
+    <string name="remember_me">添加消息</string>
+    <string name="forgot_password_title">添加消息</string>
+    <string name="search_users">添加消息</string>
+    <string name="friend_list">添加消息</string>
+    <string name="profile_image">添加消息</string>
+    <string name="friends_icon">添加消息</string>
+    <string name="chat_icon">添加消息</string>
+    <string name="update">添加消息</string>
 </resources>

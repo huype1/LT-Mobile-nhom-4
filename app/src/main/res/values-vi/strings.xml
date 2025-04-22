@@ -57,4 +57,12 @@
     <string name="friend_request_accepted_content">%1$s đã chấp nhận yêu cầu kết bạn của bạn.</string>
     <string name="add_description">Thêm một tin nhắn</string>
     <string name="history">Lịch sử</string>
+    <string name="remember_me">Ghi nhớ</string>
+    <string name="forgot_password_title">Quên mật khẩu</string>
+    <string name="search_users">Tìm nguời dùng</string>
+    <string name="friend_list">Danh sách bạn bè</string>
+    <string name="profile_image">Ảnh đại diện</string>
+    <string name="friends_icon">Icon bạn bè</string>
+    <string name="chat_icon">icon Chat</string>
+    <string name="update">cập nhật người dùng</string>
 </resources>

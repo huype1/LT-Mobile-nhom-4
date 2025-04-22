@@ -64,4 +64,5 @@
     <string name="profile_image">Profile Image</string>
     <string name="friends_icon">Friends Icon</string>
     <string name="chat_icon">Chat Icon</string>
+    <string name="update">update user</string>
 </resources>
