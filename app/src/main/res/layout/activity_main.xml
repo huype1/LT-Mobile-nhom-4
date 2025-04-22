@@ -23,7 +23,7 @@
             android:id="@+id/img_profile"
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
-            android:background="@drawable/background_btn"
+            android:background="@drawable/person_24px"
             android:clickable="true"
             android:focusable="true"
             android:padding="@dimen/_5sdp"

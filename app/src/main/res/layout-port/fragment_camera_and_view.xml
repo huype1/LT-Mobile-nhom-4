@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/_300sdp"
             android:layout_marginTop="@dimen/_45sdp"
-            android:background="@drawable/background_camera"
+            android:background="@drawable/person_24px"
             android:orientation="vertical"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 

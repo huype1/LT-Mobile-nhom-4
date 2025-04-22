@@ -2,12 +2,16 @@ package com.example.lt_mobile_nhom4.components.auth;
 
 import static com.example.lt_mobile_nhom4.utils.Helper.isValidEmail;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,8 +29,14 @@ public class LoginFragment extends Fragment {
 
     private EditText    emailEditText, passwordEditText;
     private Button loginButton;
+    private CheckBox rememberMeCheckBox;
     private FirebaseAuth mAuth;
     private AuthActivityCallback callback;
+    private SharedPreferences sharedPreferences;
+    private static final String PREF_NAME = "LoginPrefs";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_REMEMBER = "remember";
 
     public interface AuthActivityCallback {
         void onAuthSuccess();
@@ -41,6 +51,7 @@ public class LoginFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         mAuth = FirebaseAuth.getInstance();
+        sharedPreferences = getActivity().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     @Nullable
@@ -51,9 +62,13 @@ public class LoginFragment extends Fragment {
         emailEditText = view.findViewById(R.id.emailEditText);
         passwordEditText = view.findViewById(R.id.passwordEditText);
         loginButton = view.findViewById(R.id.loginButton);
+        rememberMeCheckBox = view.findViewById(R.id.rememberMeCheckBox);
+
+        // Load saved credentials if they exist
+        loadSavedCredentials();
 
         loginButton.setOnClickListener(v -> loginUser());
-        loginButton.setEnabled(true); // Enable the login button
+        loginButton.setEnabled(true);
         TextView signUpTextView = view.findViewById(R.id.signUpTextView);
         TextView forgotPasswordTextView = view.findViewById(R.id.forgotPassword);
         signUpTextView.setOnClickListener(v -> {
@@ -66,6 +81,27 @@ public class LoginFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void loadSavedCredentials() {
+        if (sharedPreferences.getBoolean(KEY_REMEMBER, false)) {
+            emailEditText.setText(sharedPreferences.getString(KEY_EMAIL, ""));
+            passwordEditText.setText(sharedPreferences.getString(KEY_PASSWORD, ""));
+            rememberMeCheckBox.setChecked(true);
+        }
+    }
+
+    private void saveCredentials(String email, String password) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (rememberMeCheckBox.isChecked()) {
+            editor.putString(KEY_EMAIL, email);
+            editor.putString(KEY_PASSWORD, password);
+            editor.putBoolean(KEY_REMEMBER, true);
+        } else {
+            editor.clear();
+        }
+        editor.apply();
+        Log.d("LoginFragment", "Credentials saved: " + rememberMeCheckBox.isChecked());
     }
 
     private void loginUser() {
@@ -82,9 +118,12 @@ public class LoginFragment extends Fragment {
             return;
         }
 
+        // Save credentials if remember me is checked
+        saveCredentials(email, password);
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
+                    Log.d("LoginFragment", task.toString());
 
                     if (task.isSuccessful()) {
                         if (callback != null) {

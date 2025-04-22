@@ -58,4 +58,5 @@
     <string name="friend_request_received_title">New Friend Request</string>
     <string name="friend_request_received_content">You have received a friend request from %1$s.</string>
     <string name="add_description">History</string>
+    <string name="remember_me">Remember Me</string>
 </resources>

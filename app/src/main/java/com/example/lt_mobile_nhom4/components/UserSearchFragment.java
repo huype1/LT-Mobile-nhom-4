@@ -1,6 +1,5 @@
 package com.example.lt_mobile_nhom4.components;
 
-import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.Manifest;
 import android.app.NotificationChannel;

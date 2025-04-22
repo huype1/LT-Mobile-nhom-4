@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.cloudinary.android.MediaManager;
 import com.example.lt_mobile_nhom4.components.UserSearchFragment;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
+import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     Button logoutButton;
     Button searchButton;
     ImageView imgProfile;
+    private SharedPreferencesManager prefsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initCloudinary();
+        prefsManager = SharedPreferencesManager.getInstance(this);
         logoutButton = findViewById(R.id.logoutButton);
         searchButton = findViewById(R.id.searchButton);
         imgProfile = findViewById(R.id.img_profile);
@@ -82,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
             showNotification();
         }
 
-        // Add this to show camera fragment by default
         if (savedInstanceState == null) {
             CameraFragment cameraFragment = new CameraFragment();
             getSupportFragmentManager().beginTransaction()

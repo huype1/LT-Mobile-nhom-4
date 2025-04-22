@@ -1,6 +1,7 @@
 package com.example.lt_mobile_nhom4;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +21,8 @@ public class AuthActivity extends AppCompatActivity {
     private Button loginButtonWelcome, registerButtonWelcome;
     private FrameLayout fragmentContainer;
     private FirebaseAuth mAuth;
+    private SharedPreferences loginPrefs;
+    private static final String PREF_NAME = "LoginPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +30,11 @@ public class AuthActivity extends AppCompatActivity {
         setContentView(R.layout.welcome_screen);
 
         mAuth = FirebaseAuth.getInstance();
-        mAuth.signOut(); // Fix this later
+        loginPrefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+
+        if (!loginPrefs.getBoolean("remember", false)) {
+            mAuth.signOut();
+        }
         
         loginButtonWelcome = findViewById(R.id.loginButtonWelcome);
         registerButtonWelcome = findViewById(R.id.registerButtonWelcome);
@@ -109,6 +116,7 @@ public class AuthActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
     @Override
     public void onBackPressed() {
         if (fragmentContainer.getVisibility() == View.VISIBLE) {
@@ -118,5 +126,4 @@ public class AuthActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 }
