@@ -66,5 +66,60 @@
     <string name="profile_image">Profile Image</string>
     <string name="friends_icon">Friends Icon</string>
     <string name="chat_icon">Chat Icon</string>
+    <string name="user_guide">User Guide</string>
+    <string name="user_guide_title">User Guide</string>
+    <string name="user_guide_content">
+                HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG LOCKET\n
+        Ứng dụng Locket giúp bạn kết nối với bạn bè bằng cách chia sẻ ảnh trực tiếp lên màn hình chính của nhau. Dưới đây là hướng dẫn chi tiết cách sử dụng các chức năng của ứng dụng.\n\n
+
+        1. Đăng ký / Đăng nhập\n
+        Đăng ký: Khi mở app lần đầu, chọn Đăng ký. Nhập email, mật khẩu và tên hiển thị để tạo tài khoản mới.\n
+        Đăng nhập: Nếu bạn đã có tài khoản, chọn Đăng nhập và nhập thông tin của mình.\n\n
+
+        2. Cập nhật thông tin tài khoản\n
+        Sau khi đăng nhập, bạn có thể truy cập phần Tài khoản để:\n
+        Cập nhật tên hiển thị và ảnh đại diện.\n
+        Đổi mật khẩu nếu cần.\n
+        Đăng xuất hoặc xóa tài khoản (xóa tài khoản sẽ mất toàn bộ dữ liệu).\n
+        Điều này giúp bạn cá nhân hóa tài khoản và dễ dàng quản lý thông tin.\n\n
+
+        3. Thêm bạn bè (Add Friends)\n
+        Để kết nối với bạn bè, chọn Thêm bạn trong ứng dụng.\n
+        Bạn có thể nhập mã bạn bè hoặc gửi mã của mình cho người khác để họ thêm bạn.\n
+        Sau khi kết nối, bạn có thể chia sẻ ảnh với nhau qua widget.\n\n
+
+        4. Chụp và gửi ảnh (Live Camera)\n
+        Nhấn vào nút Camera để mở máy ảnh và chụp ảnh.\n
+        Sau khi chụp, ảnh sẽ tự động gửi đến widget trên màn hình của bạn bè.\n
+        Chức năng này giúp bạn chia sẻ những khoảnh khắc nhanh chóng mà không cần phải vào app.\n\n
+
+        5. Xem ảnh bạn bè (Friends View)\n
+        “Mọi người”: Hiển thị tất cả ảnh từ bạn bè của bạn.\n
+        Chọn tên người: Chọn bạn để xem ảnh của từng người.\n
+        Ảnh sẽ được hiển thị theo bố cục lưới (3 ảnh mỗi hàng), giúp bạn dễ dàng theo dõi các bức ảnh.\n\n
+
+        6. Thư viện ảnh (Gallery / Lịch sử)\n
+        Xem lại các ảnh đã gửi và nhận trong phần Lịch sử.\n
+        Các ảnh được hiển thị theo thứ tự thời gian, giúp bạn dễ dàng tìm lại những khoảnh khắc cũ.\n\n
+
+        7. Thông báo (Notification)\n
+        Ứng dụng sẽ gửi thông báo khi có:\n
+        Ảnh mới từ bạn bè.\n
+        Lời mời kết bạn.\n
+        Thay đổi thông tin tài khoản.\n
+        Đảm bảo bật quyền thông báo để không bỏ lỡ bất kỳ điều gì.\n\n
+
+        8. Widget trên màn hình chính\n
+        Để xem ảnh của bạn bè ngay trên màn hình chính, bạn có thể thêm Widget Locket:\n
+        Nhấn giữ màn hình chính → chọn Widget.\n
+        Tìm Locket và kéo widget ra màn hình chính.\n
+        Ảnh sẽ tự động thay đổi mỗi khi bạn bè gửi ảnh mới, giúp bạn luôn kết nối mà không cần mở app.\n\n
+
+        9. Xóa tài khoản / Đăng xuất\n
+        Trong phần Cài đặt, bạn có thể chọn:\n
+        Đăng xuất nếu không muốn sử dụng ứng dụng tạm thời.\n
+        Xóa tài khoản nếu bạn muốn xóa toàn bộ dữ liệu và thông tin tài khoản của mình.
+    </string>
+    <string name="ok">ok</string>
     <string name="update">update user</string>
 </resources>
