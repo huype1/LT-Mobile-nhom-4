@@ -37,6 +37,7 @@ import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.example.lt_mobile_nhom4.components.ImageHistory;
 import com.example.lt_mobile_nhom4.components.ImageHistoryAdapter;
+import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -78,6 +79,8 @@ public class CameraFragment extends Fragment {
     private RecyclerView recyclerView;
     private ImageHistoryAdapter adapter;
     private LinearLayoutManager layoutManager;
+    private FirebaseAuth firebaseAuth;
+    SharedPreferencesManager prefsManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,7 +94,9 @@ public class CameraFragment extends Fragment {
 
         REQUIRED_PERMISSIONS = permissions.toArray(new String[0]);
 
-        db =  MyApplication.getFirestore();
+        db = MyApplication.getFirestore();
+
+        firebaseAuth = FirebaseAuth.getInstance();
     }
 
     @Nullable
@@ -141,10 +146,11 @@ public class CameraFragment extends Fragment {
         }, ContextCompat.getMainExecutor(requireContext()));
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        prefsManager = SharedPreferencesManager.getInstance(requireContext());
 
         adapter = new ImageHistoryAdapter();
 
@@ -270,7 +276,6 @@ public class CameraFragment extends Fragment {
         Glide.with(requireContext()).load(file).into(imageView);
     }
 
-
     private void setUpImageSend() {
         sendButton.setOnClickListener(v -> {
             if (lastCapturedPhotoFile != null) {
@@ -363,9 +368,81 @@ public class CameraFragment extends Fragment {
     }
 
     private void loadImageHistory() {
+        final String currentUserId = firebaseAuth.getCurrentUser().getUid();
+        Log.d(TAG, "User ID from SharedPreferences: " + currentUserId);
 
+        if (currentUserId == null || currentUserId.isEmpty()) {
+            if (firebaseAuth.getCurrentUser() != null) {
+                prefsManager.saveUserSession(currentUserId, firebaseAuth.getCurrentUser().getEmail());
+                Log.d(TAG, "Retrieved user ID from Firebase: " + currentUserId);
+            } else {
+                Log.d(TAG, "No user ID available, loading all images");
+                loadAllImages();
+                return;
+            }
+        }
+
+        // User is authenticated, load user's images and friends' images
+        db.collection("users").document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        Log.w(TAG, "User document does not exist for ID: " + currentUserId);
+                        loadAllImages(); // Fallback to loading all images
+                        return;
+                    }
+
+                    List<String> acceptedFriendIds = new ArrayList<>();
+                    acceptedFriendIds.add(currentUserId);
+
+                    Map<String, Object> friends = (Map<String, Object>) documentSnapshot.get("friends");
+                    if (friends != null) {
+                        for (Map.Entry<String, Object> entry : friends.entrySet()) {
+                            if ("accepted".equals(entry.getValue())) {
+                                acceptedFriendIds.add(entry.getKey());
+                            }
+                        }
+                    }
+
+                    Log.d(TAG, "Loading images for user and " + (acceptedFriendIds.size() - 1) + " friends");
+
+                    db.collection("images")
+                            .whereIn("userId", acceptedFriendIds)
+                            .orderBy("createdAt", Query.Direction.DESCENDING)
+                            .get()
+                            .addOnSuccessListener(queryDocumentSnapshots -> {
+                                List<ImageHistory> imageHistories = new ArrayList<>();
+                                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                    String imageUrl = document.getString("image_url");
+                                    String description = document.getString("description");
+                                    long timestamp = document.getLong("createdAt") != null ?
+                                            document.getLong("createdAt") : System.currentTimeMillis();
+                                    String userId = document.getString("userId");
+
+                                    imageHistories.add(new ImageHistory(imageUrl, description, userId, timestamp));
+                                }
+
+                                if (adapter != null) {
+                                    adapter.setImageHistories(imageHistories);
+                                }
+
+                                Log.d(TAG, "Số ảnh load được: " + imageHistories.size());
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Error loading image history", e);
+                                Toast.makeText(requireContext(), "Failed to load history: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                loadAllImages(); // Fallback to loading all images
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user data", e);
+                    Toast.makeText(requireContext(), "Failed to load user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    loadAllImages(); // Fallback to loading all images
+                });
+    }
+
+    private void loadAllImages() {
         db.collection("images")
-//                .whereEqualTo("userId", currentUserId)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -373,9 +450,8 @@ public class CameraFragment extends Fragment {
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String imageUrl = document.getString("image_url");
                         String description = document.getString("description");
-                        long timestamp = document.getLong("createdAt");
-                        SimpleDateFormat sdf = new SimpleDateFormat(" HH:mm dd/MM/yyyy", Locale.getDefault());
-
+                        long timestamp = document.getLong("createdAt") != null ?
+                                document.getLong("createdAt") : System.currentTimeMillis();
                         String userId = document.getString("userId");
 
                         imageHistories.add(new ImageHistory(imageUrl, description, userId, timestamp));
@@ -385,12 +461,11 @@ public class CameraFragment extends Fragment {
                         adapter.setImageHistories(imageHistories);
                     }
 
-                    Log.d(TAG, "Số ảnh load được: " + imageHistories.size());
-
+                    Log.d(TAG, "Loaded all images: " + imageHistories.size());
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading image history", e);
-                    Toast.makeText(requireContext(), "Failed to load history", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error loading all images", e);
+                    Toast.makeText(requireContext(), "Failed to load images: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
