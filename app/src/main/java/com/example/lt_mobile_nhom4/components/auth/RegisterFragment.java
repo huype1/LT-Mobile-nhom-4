@@ -133,7 +133,7 @@ public class RegisterFragment extends Fragment {
             return;
         }
 
-        if (TextUtils.isEmpty(phoneNumber)) {
+        if (TextUtils.isEmpty(phoneNumber) || phoneNumber.length() < 10 || phoneNumber.length() > 15 || phoneNumber.charAt(0) != '0') {
             phoneNumberEditText.setError(getString(R.string.error_phone_required));
             return;
         }
@@ -142,7 +142,7 @@ public class RegisterFragment extends Fragment {
             usernameEditText.setError(getString(R.string.error_username_required));
             return;
         }
-        
+
         if (TextUtils.isEmpty(fullName)) {
             fullNameEditText.setError(getString(R.string.error_fullname_required));
             return;
@@ -150,7 +150,7 @@ public class RegisterFragment extends Fragment {
 
         registerButton.setEnabled(false);
         Toast.makeText(getContext(), getString(R.string.checking_username), Toast.LENGTH_SHORT).show();
-        
+
         FirebaseFirestore db =  MyApplication.getFirestore();
         db.collection("users")
                 .whereEqualTo("username", username)
@@ -171,12 +171,12 @@ public class RegisterFragment extends Fragment {
                     }
                 });
     }
-    
+
     private void createFirebaseUser(String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     registerButton.setEnabled(true);
-                    
+
                     if (task.isSuccessful()) {
                         FirebaseUser user = task.getResult().getUser();
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()

@@ -395,7 +395,7 @@ public class CameraFragment extends Fragment {
                 Log.d(TAG, "Retrieved user ID from Firebase: " + currentUserId);
             } else {
                 Log.d(TAG, "No user ID available, loading all images");
-                loadAllImages();
+//                loadAllImages();
                 return;
             }
         }
@@ -406,7 +406,7 @@ public class CameraFragment extends Fragment {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (!documentSnapshot.exists()) {
                         Log.w(TAG, "User document does not exist for ID: " + currentUserId);
-                        loadAllImages(); // Fallback to loading all images
+//                        loadAllImages(); // Fallback to loading all images
                         return;
                     }
 
@@ -459,7 +459,7 @@ public class CameraFragment extends Fragment {
                 });
     }
 
-    private void loadAllImages() {
+    public void loadAllImages() {
         db.collection("images")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
