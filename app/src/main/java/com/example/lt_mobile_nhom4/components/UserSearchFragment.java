@@ -1,5 +1,12 @@
 package com.example.lt_mobile_nhom4.components;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,6 +21,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -159,31 +170,34 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
     @Override
     public void onSendFriendRequest(User user, int position) {
         if (currentUserId == null) return;
-        
+
         searchProgressBar.setVisibility(View.VISIBLE);
-        
+
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
             // Update current user document - add sent request
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), User.FriendStatus.PENDING_SENT.getValue()
             );
-            
+
             // Update other user document - add received request
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, User.FriendStatus.PENDING_RECEIVED.getValue()
             );
-            
+
             return null;
         }).addOnSuccessListener(aVoid -> {
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-            
+
+            // Gửi thông báo khi gửi yêu cầu kết bạn
+            sendFriendRequestReceivedNotification(user.getUsername());  // Gửi thông báo cho người nhận yêu cầu
+
             // Update local user object to reflect the change
             user.setFriendStatus(currentUserId, User.FriendStatus.PENDING_SENT);
             userAdapter.updateUser(user, position);
-            
+
         }).addOnFailureListener(e -> {
             searchProgressBar.setVisibility(View.GONE);
             Log.e(TAG, "Error sending friend request: ", e);
@@ -191,40 +205,45 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         });
     }
 
+
     @Override
     public void onAcceptFriendRequest(User user, int position) {
         if (currentUserId == null) return;
-        
+
         searchProgressBar.setVisibility(View.VISIBLE);
-        
+
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
             // Update current user document - accept request
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), User.FriendStatus.ACCEPTED.getValue()
             );
-            
+
             // Update other user document - accept request
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, User.FriendStatus.ACCEPTED.getValue()
             );
-            
+
             return null;
         }).addOnSuccessListener(aVoid -> {
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "You are now friends with " + user.getUsername(), Toast.LENGTH_SHORT).show();
-            
+
+            // Gửi thông báo khi yêu cầu kết bạn được chấp nhận
+            sendFriendRequestAcceptedNotification(user.getUsername());  // Gửi thông báo cho người gửi yêu cầu
+
             // Update local user object to reflect the change
             user.setFriendStatus(currentUserId, User.FriendStatus.ACCEPTED);
             userAdapter.updateUser(user, position);
-            
+
         }).addOnFailureListener(e -> {
             searchProgressBar.setVisibility(View.GONE);
             Log.e(TAG, "Error accepting friend request: ", e);
             Toast.makeText(requireContext(), "Failed to accept friend request", Toast.LENGTH_SHORT).show();
         });
     }
+
 
     @Override
     public void onRejectFriendRequest(User user, int position) {
@@ -299,4 +318,92 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             Toast.makeText(requireContext(), "Failed to cancel friend request", Toast.LENGTH_SHORT).show();
         });
     }
+
+    private void createNotificationChannel() {
+        if (hasNotificationPermission()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                CharSequence name = "Friend Requests";
+                String description = "Notifications for friend requests";
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel("friend_requests", name, importance);
+                channel.setDescription(description);
+
+                NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(NotificationManager.class);
+                notificationManager.createNotificationChannel(channel);
+            }
+        } else {
+            requestNotificationPermission();
+        }
+    }
+
+    private void sendFriendRequestReceivedNotification(String friendName) {
+        try {
+            // Proceed with creating and sending the notification
+            String title = getString(R.string.friend_request_received_title);
+            String content = String.format(getString(R.string.friend_request_received_content), friendName);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true);
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
+            notificationManager.notify(1, builder.build());
+
+        } catch (SecurityException e) {
+            // If permission is denied, do nothing (no notification will be sent)
+            Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
+        }
+    }
+
+    private void sendFriendRequestAcceptedNotification(String friendName) {
+        try {
+            // Proceed with creating and sending the notification
+            String title = getString(R.string.friend_request_accepted_title);
+            String content = String.format(getString(R.string.friend_request_accepted_content), friendName);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true);
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
+            notificationManager.notify(2, builder.build());
+
+        } catch (SecurityException e) {
+            // If permission is denied, do nothing (no notification will be sent)
+            Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
+        }
+    }
+
+    private boolean hasNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true;
+    }
+
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                createNotificationChannel();
+            } else {
+                Toast.makeText(requireContext(), "Permission denied to send notifications", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }
