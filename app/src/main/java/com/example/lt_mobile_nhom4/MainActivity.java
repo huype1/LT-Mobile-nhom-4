@@ -29,6 +29,7 @@ import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.example.lt_mobile_nhom4.components.image_view.ImageHistoryFragment;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+
         imgProfile = findViewById(R.id.imgProfile); // Initialize imgProfile
         tvFriendsCount = findViewById(R.id.tvFriendsCount);
 
@@ -69,23 +71,6 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-//        logoutButton.setOnClickListener(v -> {
-//            FirebaseAuth.getInstance().signOut();
-//            Intent intent = new Intent(this, AuthActivity.class);
-//            startActivity(intent);
-//            finish();
-//        });
-//
-//        searchButton.setOnClickListener(v -> {
-//            openUserSearchFragment();
-//        });
-
-//        imgProfile.setOnClickListener(v -> {
-//            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-//            startActivity(intent);
-//        });
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -93,18 +78,26 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             } else {
                 createNotificationChannel();
-                showNotification();
+                createFriendNotificationChannel();
             }
         } else {
+            // For lower versions, no need for the POST_NOTIFICATIONS permission
             createNotificationChannel();
-            showNotification();
+            createFriendNotificationChannel();
         }
+
 
         if (savedInstanceState == null) {
             CameraFragment cameraFragment = new CameraFragment();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, cameraFragment)
                     .commit();
+        }
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            Intent serviceIntent = new Intent(this, FriendImageListenerService.class);
+            ContextCompat.startForegroundService(this, serviceIntent);
         }
 
         updateFriendsCount(0);
@@ -172,17 +165,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(getString(R.string.notification_content))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+    private void createFriendNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "friend_requests",
+                    "Friend Activity",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Thông báo khi bạn bè đăng ảnh mới");
 
-        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
-                == PackageManager.PERMISSION_GRANTED) {
-            manager.notify(1, builder.build());
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
         }
     }
 

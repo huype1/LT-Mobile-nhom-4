@@ -50,8 +50,6 @@
     <string name="yes">是</string>
     <string name="cancel">取消</string>
     <string name="default_channel_name">通用频道</string>
-    <string name="notification_title">欢迎使用 Locket</string>
-    <string name="notification_content">欢迎使用 Locket！</string>
     <string name="notification_permission_denied">已拒绝通知权限。</string>
     <string name="friend_request_received_title">新好友请求</string>
     <string name="friend_request_received_content">您已收到来自 %1$s 的好友请求。</string>
