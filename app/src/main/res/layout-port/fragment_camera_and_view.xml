@@ -9,14 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/bg"
-        app:layout_scrollFlags="scroll|exitUntilCollapsed">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/_300sdp"
             android:orientation="vertical"
-            android:layout_marginVertical="@dimen/_45sdp"
-            android:background="@drawable/background_camera">
+            android:layout_marginTop="@dimen/_45sdp"
+            android:background="@drawable/background_camera"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <androidx.camera.view.PreviewView
                 android:id="@+id/camera_view"
@@ -27,15 +28,14 @@
             <RelativeLayout
                 android:id="@+id/image_view_layout"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_10sdp"
+                android:layout_height="match_parent"
                 android:visibility="gone">
 
                 <ImageView
                     android:id="@+id/image_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop">
-                </ImageView>
+                    android:scaleType="centerCrop"/>
 
                 <EditText
                     android:id="@+id/text_add_message"
@@ -52,15 +52,14 @@
                     android:textColorHint="@color/white"
                     android:visibility="visible"/>
             </RelativeLayout>
-
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/linear_bottom"
-            android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_scrollFlags="enterAlways">
 
             <LinearLayout
                 android:id="@+id/linear_bottom_controller"
@@ -175,9 +174,31 @@
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <RelativeLayout
+        android:id="@+id/view_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_15sdp"
+        android:layout_gravity="bottom"
+        android:elevation="4dp"
+        android:visibility="gone"
+        android:background="@color/bg">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_45sdp"
+            android:src="@drawable/image_library"
+            android:background="@color/amp_transparent"/>
+    </RelativeLayout>
+
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/_45sdp"
+        android:visibility="gone"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -186,14 +207,15 @@
             android:orientation="vertical"
             android:padding="@dimen/_16sdp">
 
-            <!-- Đây là các ảnh đã chụp hoặc từ bạn bè -->
             <ImageView
+                android:id="@+id/image_upload"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_300sdp"
                 android:layout_marginBottom="@dimen/_20sdp"
-                android:scaleType="centerCrop"/>
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:background="@color/black"/>
 
-            <!-- ... thêm ảnh nếu cần -->
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -72,5 +72,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:$appcompat_version")
     implementation("androidx.appcompat:appcompat-resources:$appcompat_version")
+    implementation("com.google.guava:guava:32.1.3-android")
 
 }

@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lt_mobile_nhom4.AuthActivity;
 import com.example.lt_mobile_nhom4.R;
+import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginFragment extends Fragment {
