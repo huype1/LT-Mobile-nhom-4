@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,13 +22,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.bumptech.glide.Glide; // Import Glide for image loading
 import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.UploadCallback;
+import com.cloudinary.android.callback.ErrorInfo;
 import com.example.lt_mobile_nhom4.components.UserSearchFragment;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
-import com.example.lt_mobile_nhom4.components.image_view.ImageHistoryFragment;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -38,9 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-//    private String cloudName = "CLOUDINARY_URL=cloudinary://117691381147521:Q5uRqKIvX094XNSXkekVHZIFGqM@dkjha8fug";
-//    Button logoutButton;
-//    Button searchButton;
     ImageView imgProfile;
     private TextView tvFriendsCount;
     private SharedPreferencesManager prefsManager;
@@ -62,15 +61,29 @@ public class MainActivity extends AppCompatActivity {
 
         initCloudinary();
         prefsManager = SharedPreferencesManager.getInstance(this);
-//        logoutButton = findViewById(R.id.logoutButton);
-//        searchButton = findViewById(R.id.searchButton);
-//        imgProfile = findViewById(R.id.img_profile);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+//        logoutButton.setOnClickListener(v -> {
+//            FirebaseAuth.getInstance().signOut();
+//            Intent intent = new Intent(this, AuthActivity.class);
+//            startActivity(intent);
+//            finish();
+//        });
+//
+//        searchButton.setOnClickListener(v -> {
+//            openUserSearchFragment();
+//        });
+
+//        imgProfile.setOnClickListener(v -> {
+//            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+//            startActivity(intent);
+//        });
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -107,11 +120,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Load avatar URI from SharedPreferences
-        String avatarUri = SharedPreferencesManager.getInstance(this).getString("avatarUri", null);
-        if (avatarUri != null) {
-            imgProfile.setImageURI(Uri.parse(avatarUri)); // Update imgProfile
-        }
+        loadUserAvatar(); // Load lại avatar từ Firestore
+    }
+
+    private void loadUserAvatar() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String avatarUrl = documentSnapshot.getString("avatarUrl");
+                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        // Use Glide to load the avatar URL into the ImageView
+                        Glide.with(this)
+                            .load(avatarUrl)
+                            .placeholder(R.drawable.person_24px) // Default placeholder
+                            .into(imgProfile);
+                    }
+                }
+            })
+            .addOnFailureListener(e -> Log.e("MainActivity", "Failed to load avatar", e));
     }
 
     private void updateFriendsCount(int count) {
@@ -154,6 +183,65 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Cloudinary", "Cloudinary is already initialized");
         }
     }
+
+    private void updateAvatarUrl(String avatarUrl) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("avatarUrl", avatarUrl);
+
+        db.collection("users").document(userId).update(updates)
+            .addOnSuccessListener(aVoid -> Log.d("MainActivity", "Avatar URL updated successfully"))
+            .addOnFailureListener(e -> Log.e("MainActivity", "Failed to update avatar URL", e));
+    }
+
+    private void uploadAvatarToCloudinary(Uri imageUri) {
+        if (imageUri == null) {
+            Log.e("MainActivity", "Image URI is null");
+            return;
+        }
+
+        MediaManager.get().upload(imageUri)
+            .callback(new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
+                    Log.d("Cloudinary", "Upload started: " + requestId);
+                }
+
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    Log.d("Cloudinary", "Upload progress: " + bytes + "/" + totalBytes);
+                }
+
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    String avatarUrl = (String) resultData.get("secure_url");
+                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        Log.d("Cloudinary", "Upload successful: " + avatarUrl);
+                        updateAvatarUrl(avatarUrl); // Save the URL to Firestore
+                        Glide.with(MainActivity.this)
+                            .load(avatarUrl)
+                            .placeholder(R.drawable.person_24px)
+                            .into(imgProfile); // Update the ImageView
+                    } else {
+                        Log.e("Cloudinary", "Upload successful but URL is empty");
+                    }
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    Log.e("Cloudinary", "Upload failed: " + error.getDescription());
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                    Log.e("Cloudinary", "Upload rescheduled: " + error.getDescription());
+                }
+            })
+            .dispatch();
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -179,9 +267,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
 }
+
