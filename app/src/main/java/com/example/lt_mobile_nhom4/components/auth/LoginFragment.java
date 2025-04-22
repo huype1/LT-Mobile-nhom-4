@@ -168,9 +168,7 @@ public class LoginFragment extends Fragment {
     }
 
     private void clearFirestoreCache() {
-        MyApplication.getFirestore().clearPersistence()
-                .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Firestore cache cleared successfully"))
-                .addOnFailureListener(e -> Log.e("LoginFragment", "Error clearing Firestore cache", e));
+//        wake up mr west, this ain't it
     }
 
     private void handleForgotPassword() {
