@@ -6,8 +6,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.lt_mobile_nhom4.R;
 
+import java.io.File;
 import java.util.List;
 
 public class PhotoDetailAdapter extends RecyclerView.Adapter<PhotoDetailAdapter.ViewHolder> {
@@ -35,7 +37,10 @@ public class PhotoDetailAdapter extends RecyclerView.Adapter<PhotoDetailAdapter.
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.imageView.setImageResource(photoList.get(position).getResId());
+        Photo photo = photoList.get(position);
+        Glide.with(holder.itemView.getContext())
+                .load(new File(photo.getFilePath()))
+                .into(holder.imageView);
     }
 
     @Override
