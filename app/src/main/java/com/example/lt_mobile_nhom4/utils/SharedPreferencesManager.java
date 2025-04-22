@@ -48,4 +48,8 @@ public class SharedPreferencesManager {
         editor.clear();
         editor.apply();
     }
+
+    public String getString(String avatarUri, Object o) {
+        return sharedPreferences.getString(avatarUri, null);
+    }
 }

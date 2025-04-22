@@ -1,17 +1,21 @@
 package com.example.lt_mobile_nhom4.components.friendview;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lt_mobile_nhom4.R;
+import com.example.lt_mobile_nhom4.components.camera.CameraContainerActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +35,7 @@ public class FriendViewActivity extends AppCompatActivity {
 
         Everyone = findViewById(R.id.friend_selector);
         recyclerView = findViewById(R.id.recycler_view);
+        ImageButton cameraButton = findViewById(R.id.camera);
 
         friendList = FriendData.getFriends(this);
 
@@ -41,6 +46,13 @@ public class FriendViewActivity extends AppCompatActivity {
         recyclerView.setAdapter(photoAdapter);
 
         Everyone.setOnClickListener(v -> showFriendPicker());
+
+        // Sự kiện khi nhấn camera
+        cameraButton.setOnClickListener(v -> {
+            Intent intent = new Intent(FriendViewActivity.this, CameraContainerActivity.class);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_top, R.anim.fade_out);
+        });
     }
 
     private void updatePhotosForEveryone() {
@@ -63,7 +75,6 @@ public class FriendViewActivity extends AppCompatActivity {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_photo_actions, null);
 
-        // Bổ sung các nút chọn bạn trong dialog này tùy thích
         for (Friend friend : friendList) {
             TextView tv = new TextView(this);
             tv.setText(friend.getName());

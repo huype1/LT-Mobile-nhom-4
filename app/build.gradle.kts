@@ -54,6 +54,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation(libs.camera.core)
+    implementation(libs.core)
     annotationProcessor("org.projectlombok:lombok:1.18.32")
     implementation("org.projectlombok:lombok:1.18.32")
     implementation(libs.firebase.firestore)

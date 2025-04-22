@@ -47,6 +47,7 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
             />
+        <activity android:name=".WelcomeActivity" />
 
         <receiver android:name=".HomeWidget" android:exported="true">
             <intent-filter>
