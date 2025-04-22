@@ -61,10 +61,10 @@
             <ImageView
                 android:id="@+id/imgProfile"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="40dp"
+                android:contentDescription="@string/profile_image"
                 android:scaleType="centerCrop"
-                android:src="@drawable/person_24px"
-                android:contentDescription="@string/profile_image" />
+                android:src="@drawable/person_24px" />
         </androidx.cardview.widget.CardView>
 
         <!-- Friends Count (Center) -->

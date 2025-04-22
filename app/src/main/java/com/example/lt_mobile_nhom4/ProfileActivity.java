@@ -31,6 +31,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
+import com.bumptech.glide.Glide;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
     LinearLayout deleteAccountButton;
@@ -211,13 +218,8 @@ public class ProfileActivity extends AppCompatActivity {
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImage = data.getData();
             if (selectedImage != null) {
-                imgCapture.setImageURI(selectedImage); // Update avatar
-
-                // Save avatar URI to SharedPreferences
-                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString(KEY_AVATAR_URI, selectedImage.toString());
-                editor.apply();
+                imgCapture.setImageURI(selectedImage); // Hiển thị ảnh tạm thời
+                uploadAvatarToCloudinary(selectedImage); // Upload ảnh lên Cloudinary
             }
         }
 
@@ -229,5 +231,65 @@ public class ProfileActivity extends AppCompatActivity {
                 appWidgetManager.updateAppWidget(appWidgetId, views);
             }
         }
+    }
+
+    private void uploadAvatarToCloudinary(Uri imageUri) {
+        if (imageUri == null) {
+            Log.e("ProfileActivity", "Image URI is null");
+            return;
+        }
+
+        MediaManager.get().upload(imageUri)
+            .callback(new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
+                    Log.d("Cloudinary", "Upload started: " + requestId);
+                }
+
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    Log.d("Cloudinary", "Upload progress: " + bytes + "/" + totalBytes);
+                }
+
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    String avatarUrl = (String) resultData.get("secure_url");
+                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        Log.d("Cloudinary", "Upload successful: " + avatarUrl);
+                        updateAvatarUrlInFirestore(avatarUrl); // Cập nhật URL vào Firestore
+                    } else {
+                        Log.e("Cloudinary", "Upload successful but URL is empty");
+                    }
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    Log.e("Cloudinary", "Upload failed: " + error.getDescription());
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                    Log.e("Cloudinary", "Upload rescheduled: " + error.getDescription());
+                }
+            })
+            .dispatch();
+    }
+
+    private void updateAvatarUrlInFirestore(String avatarUrl) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("avatarUrl", avatarUrl);
+
+        db.collection("users").document(userId).update(updates)
+            .addOnSuccessListener(aVoid -> {
+                Log.d("ProfileActivity", "Avatar URL updated successfully");
+                Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.person_24px)
+                    .into(imgCapture); // Hiển thị ảnh mới
+            })
+            .addOnFailureListener(e -> Log.e("ProfileActivity", "Failed to update avatar URL", e));
     }
 }
