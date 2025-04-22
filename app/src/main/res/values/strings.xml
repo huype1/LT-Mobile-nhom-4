@@ -60,4 +60,10 @@
     <string name="add_description">Add a message</string>
     <string name="history">History</string>
     <string name="remember_me">Remember Me</string>
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="search_users">Search users</string>
+    <string name="friend_list">Friend List</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="friends_icon">Friends Icon</string>
+    <string name="chat_icon">Chat Icon</string>
 </resources>

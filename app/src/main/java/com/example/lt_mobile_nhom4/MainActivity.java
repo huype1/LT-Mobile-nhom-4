@@ -4,11 +4,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,16 +28,18 @@ import com.example.lt_mobile_nhom4.components.UserSearchFragment;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 //    private String cloudName = "CLOUDINARY_URL=cloudinary://117691381147521:Q5uRqKIvX094XNSXkekVHZIFGqM@dkjha8fug";
-    Button logoutButton;
-    Button searchButton;
     ImageView imgProfile;
-    SharedPreferencesManager prefsManager;
+    private TextView tvFriendsCount;
+    private SharedPreferencesManager prefsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,34 +47,22 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        initCloudinary();
-        prefsManager = SharedPreferencesManager.getInstance(this);
-        logoutButton = findViewById(R.id.logoutButton);
-        searchButton = findViewById(R.id.searchButton);
-        imgProfile = findViewById(R.id.img_profile);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, AuthActivity.class);
-            startActivity(intent);
-            finish();
-        });
-
-        searchButton.setOnClickListener(v -> {
-            openUserSearchFragment();
-        });
+        imgProfile = findViewById(R.id.imgProfile); // Initialize imgProfile
+        tvFriendsCount = findViewById(R.id.tvFriendsCount);
 
         imgProfile.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
         });
 
+        initCloudinary();
+        prefsManager = SharedPreferencesManager.getInstance(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -91,6 +83,40 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.fragmentContainer, cameraFragment)
                     .commit();
         }
+
+        updateFriendsCount(0);
+        syncFriendsCount(); // Đồng bộ số lượng bạn bè
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Load avatar URI from SharedPreferences
+        String avatarUri = SharedPreferencesManager.getInstance(this).getString("avatarUri", null);
+        if (avatarUri != null) {
+            imgProfile.setImageURI(Uri.parse(avatarUri)); // Update imgProfile
+        }
+    }
+
+    private void updateFriendsCount(int count) {
+        tvFriendsCount.setText(count + " Bạn bè");
+    }
+
+    private void syncFriendsCount() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(userId).collection("friends")
+                .addSnapshotListener((QuerySnapshot snapshot, FirebaseFirestoreException e) -> {
+                    if (e != null) {
+                        Log.e("MainActivity", "Error fetching friends count", e);
+                        return;
+                    }
+                    if (snapshot != null) {
+                        int count = snapshot.size();
+                        updateFriendsCount(count); // Cập nhật giao diện
+                    }
+                });
     }
 
     private void openUserSearchFragment() {
