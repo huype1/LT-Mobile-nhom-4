@@ -385,7 +385,7 @@ public class CameraFragment extends Fragment {
 
     }
 
-    private void loadImageHistory() {
+    public void loadImageHistory() {
         final String currentUserId = firebaseAuth.getCurrentUser().getUid();
         Log.d(TAG, "User ID from SharedPreferences: " + currentUserId);
 
@@ -395,7 +395,6 @@ public class CameraFragment extends Fragment {
                 Log.d(TAG, "Retrieved user ID from Firebase: " + currentUserId);
             } else {
                 Log.d(TAG, "No user ID available, loading all images");
-//                loadAllImages();
                 return;
             }
         }
@@ -447,15 +446,13 @@ public class CameraFragment extends Fragment {
                                 Log.d(TAG, "Số ảnh load được: " + imageHistories.size());
                             })
                             .addOnFailureListener(e -> {
-                                Log.e(TAG, "Error loading image history", e);
                                 Toast.makeText(requireContext(), "Failed to load history: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                loadAllImages(); // Fallback to loading all images
+//                                loadAllImages(); // Fallback to loading all images
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching user data", e);
                     Toast.makeText(requireContext(), "Failed to load user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    loadAllImages(); // Fallback to loading all images
+//                    loadAllImages(); // Fallback to loading all images
                 });
     }
 
