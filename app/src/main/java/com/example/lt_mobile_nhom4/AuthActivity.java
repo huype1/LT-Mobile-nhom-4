@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.lt_mobile_nhom4.components.auth.LoginFragment;
 import com.example.lt_mobile_nhom4.components.auth.RegisterFragment;
+import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -26,6 +27,7 @@ public class AuthActivity extends AppCompatActivity {
         setContentView(R.layout.welcome_screen);
 
         mAuth = FirebaseAuth.getInstance();
+        mAuth.signOut(); // Fix this later
         
         loginButtonWelcome = findViewById(R.id.loginButtonWelcome);
         registerButtonWelcome = findViewById(R.id.registerButtonWelcome);
@@ -93,7 +95,15 @@ public class AuthActivity extends AppCompatActivity {
     public void onAuthSuccess() {
         startMainActivity();
     }
-    
+
+    private void showCameraFragment() {
+        CameraFragment cameraFragment = new CameraFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, cameraFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
     private void startMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
