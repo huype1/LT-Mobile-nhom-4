@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -26,7 +27,7 @@ public class ImageHistoryAdapter extends RecyclerView.Adapter<ImageHistoryAdapte
     private FirebaseFirestore db;
 
     public ImageHistoryAdapter() {
-        db = FirebaseFirestore.getInstance();
+        db = MyApplication.getFirestore();
     }
 
     public void setImageHistories(List<ImageHistory> imageHistories) {

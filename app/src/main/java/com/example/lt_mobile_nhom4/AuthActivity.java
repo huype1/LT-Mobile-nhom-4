@@ -2,6 +2,7 @@ package com.example.lt_mobile_nhom4;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.lt_mobile_nhom4.components.auth.LoginFragment;
@@ -23,6 +25,12 @@ public class AuthActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private SharedPreferences loginPrefs;
     private static final String PREF_NAME = "LoginPrefs";
+    private static final String CURRENT_FRAGMENT = "current_fragment";
+    private static final String WELCOME_VISIBLE = "welcome_visible";
+    private static final int FRAGMENT_NONE = 0;
+    private static final int FRAGMENT_LOGIN = 1;
+    private static final int FRAGMENT_REGISTER = 2;
+    private int currentFragmentType = FRAGMENT_NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +50,32 @@ public class AuthActivity extends AppCompatActivity {
         
         loginButtonWelcome.setOnClickListener(v -> showLoginFragment());
         registerButtonWelcome.setOnClickListener(v -> showRegisterFragment());
+
+        if (savedInstanceState != null) {
+            currentFragmentType = savedInstanceState.getInt(CURRENT_FRAGMENT, FRAGMENT_NONE);
+            boolean welcomeVisible = savedInstanceState.getBoolean(WELCOME_VISIBLE, true);
+
+            toggleWelcomeContentVisibility(welcomeVisible);
+
+            if (currentFragmentType == FRAGMENT_LOGIN) {
+                LoginFragment loginFragment = new LoginFragment();
+                loginFragment.setAuthActivityCallback(this::onAuthSuccess);
+                replaceFragment(loginFragment, "login_fragment");
+            } else if (currentFragmentType == FRAGMENT_REGISTER) {
+                RegisterFragment registerFragment = new RegisterFragment();
+                registerFragment.setAuthActivityCallback(this::onAuthSuccess);
+                replaceFragment(registerFragment, "register_fragment");
+            }
+        }
+    }
+
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(CURRENT_FRAGMENT, currentFragmentType);
+        outState.putBoolean(WELCOME_VISIBLE, fragmentContainer.getVisibility() != View.VISIBLE);
     }
     
     @Override
@@ -56,24 +90,27 @@ public class AuthActivity extends AppCompatActivity {
     
     public void showLoginFragment() {
         toggleWelcomeContentVisibility(false);
+        currentFragmentType = FRAGMENT_LOGIN;
         
         LoginFragment loginFragment = new LoginFragment();
         loginFragment.setAuthActivityCallback(this::onAuthSuccess);
         
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, loginFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        replaceFragment(loginFragment, "login_fragment");
     }
     
     public void showRegisterFragment() {
         toggleWelcomeContentVisibility(false);
+        currentFragmentType = FRAGMENT_REGISTER;
         
         RegisterFragment registerFragment = new RegisterFragment();
         registerFragment.setAuthActivityCallback(this::onAuthSuccess);
         
+        replaceFragment(registerFragment, "register_fragment");
+    }
+    
+    private void replaceFragment(Fragment fragment, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, registerFragment);
+        transaction.replace(R.id.fragmentContainer, fragment, tag);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -97,6 +134,10 @@ public class AuthActivity extends AppCompatActivity {
         }
         
         fragmentContainer.setVisibility(fragmentVisibility);
+        
+        if (showWelcome) {
+            currentFragmentType = FRAGMENT_NONE;
+        }
     }
 
     public void onAuthSuccess() {

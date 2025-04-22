@@ -2,6 +2,7 @@ package com.example.lt_mobile_nhom4.components.auth;
 
 import static com.example.lt_mobile_nhom4.utils.Helper.isValidEmail;
 
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.lt_mobile_nhom4.AuthActivity;
+import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,7 +36,7 @@ public class RegisterFragment extends Fragment {
     private Button registerButton;
     private FirebaseAuth mAuth;
     private LoginFragment.AuthActivityCallback callback;
-    private LinearLayout root;
+    private View rootView;
 
     public void setAuthActivityCallback(LoginFragment.AuthActivityCallback callback) {
         this.callback = callback;
@@ -45,7 +46,6 @@ public class RegisterFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-
     }
 
     @Nullable
@@ -53,7 +53,7 @@ public class RegisterFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.register_fragment, container, false);
 
-        this.root = (LinearLayout) view;
+        this.rootView = view;
         emailEditText = view.findViewById(R.id.emailEditText);
         passwordEditText = view.findViewById(R.id.passwordEditText);
         confirmPasswordEditText = view.findViewById(R.id.confirmPasswordEditText);
@@ -70,6 +70,39 @@ public class RegisterFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Save current form data
+        String email = emailEditText != null ? emailEditText.getText().toString() : "";
+        String password = passwordEditText != null ? passwordEditText.getText().toString() : "";
+        String confirmPassword = confirmPasswordEditText != null ? confirmPasswordEditText.getText().toString() : "";
+        String phoneNumber = phoneNumberEditText != null ? phoneNumberEditText.getText().toString() : "";
+        String username = usernameEditText != null ? usernameEditText.getText().toString() : "";
+        String fullName = fullNameEditText != null ? fullNameEditText.getText().toString() : "";
+
+        // Recreate the view with the appropriate layout
+        ViewGroup parent = (ViewGroup) getView().getParent();
+        int index = parent != null ? parent.indexOfChild(getView()) : 0;
+
+        View newView = onCreateView(LayoutInflater.from(getContext()), parent, null);
+
+        // Restore form data
+        if (emailEditText != null) emailEditText.setText(email);
+        if (passwordEditText != null) passwordEditText.setText(password);
+        if (confirmPasswordEditText != null) confirmPasswordEditText.setText(confirmPassword);
+        if (phoneNumberEditText != null) phoneNumberEditText.setText(phoneNumber);
+        if (usernameEditText != null) usernameEditText.setText(username);
+        if (fullNameEditText != null) fullNameEditText.setText(fullName);
+
+        // Replace the old view with the new one
+        if (parent != null) {
+            parent.removeViewAt(index);
+            parent.addView(newView, index);
+        }
     }
 
     private void registerUser() {
@@ -118,7 +151,7 @@ public class RegisterFragment extends Fragment {
         registerButton.setEnabled(false);
         Toast.makeText(getContext(), getString(R.string.checking_username), Toast.LENGTH_SHORT).show();
         
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseFirestore db =  MyApplication.getFirestore();
         db.collection("users")
                 .whereEqualTo("username", username)
                 .get()
@@ -171,7 +204,7 @@ public class RegisterFragment extends Fragment {
     }
 
     public void initData(FirebaseUser user) {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestore firestore = MyApplication.getFirestore();
         String timestamp = String.valueOf(System.currentTimeMillis());
 
         Map<String, Object> data = new HashMap<>();

@@ -28,12 +28,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.MemoryCacheSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.Source;
 import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
@@ -62,7 +65,7 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        firestore = FirebaseFirestore.getInstance();
+        firestore = MyApplication.getFirestore();
         firebaseAuth = FirebaseAuth.getInstance();
         
         if (firebaseAuth.getCurrentUser() != null) {
@@ -103,6 +106,22 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
                 }
             }
         });
+
+        createNotificationChannel();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (firebaseAuth.getCurrentUser() != null) {
+            currentUserId = firebaseAuth.getCurrentUser().getUid();
+            userAdapter.setCurrentUserId(currentUserId);
+
+            String searchText = searchEditText.getText().toString().trim().toLowerCase();
+            if (searchText.length() >= 2) {
+                searchUsers(searchText);
+            }
+        }
     }
 
     private void searchUsers(String searchQuery) {
@@ -137,10 +156,11 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
                                 user.setImageUrl(document.getString("image-url"));
                                 user.setCreatedAt(document.getString("created-at"));
                                 
-                                // Get friends data
                                 Map<String, String> friends = new HashMap<>();
                                 if (document.contains("friends")) {
                                     Map<String, Object> friendsData = (Map<String, Object>) document.get("friends");
+
+                                    Log.d(TAG, "Friends data: " + document.get("friends") + " " + friendsData);;
                                     if (friendsData != null) {
                                         for (Map.Entry<String, Object> entry : friendsData.entrySet()) {
                                             friends.put(entry.getKey(), (String) entry.getValue());
@@ -152,11 +172,12 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
                                 matchedUsers.add(user);
                             }
                         }
-                        
+
                         if (matchedUsers.isEmpty()) {
                             noResultsTextView.setVisibility(View.VISIBLE);
                         } else {
                             userAdapter.setUsers(matchedUsers);
+                            setupFriendStatusListener(matchedUsers);  // Add this line
                         }
                         
                     } else {
@@ -173,13 +194,11 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         searchProgressBar.setVisibility(View.VISIBLE);
 
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
-            // Update current user document - add sent request
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), User.FriendStatus.PENDING_SENT.getValue()
             );
 
-            // Update other user document - add received request
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, User.FriendStatus.PENDING_RECEIVED.getValue()
@@ -190,10 +209,8 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
 
-            // Gửi thông báo khi gửi yêu cầu kết bạn
             sendFriendRequestReceivedNotification(user.getUsername());  // Gửi thông báo cho người nhận yêu cầu
 
-            // Update local user object to reflect the change
             user.setFriendStatus(currentUserId, User.FriendStatus.PENDING_SENT);
             userAdapter.updateUser(user, position);
 
@@ -212,13 +229,11 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         searchProgressBar.setVisibility(View.VISIBLE);
 
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
-            // Update current user document - accept request
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), User.FriendStatus.ACCEPTED.getValue()
             );
 
-            // Update other user document - accept request
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, User.FriendStatus.ACCEPTED.getValue()
@@ -229,10 +244,8 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "You are now friends with " + user.getUsername(), Toast.LENGTH_SHORT).show();
 
-            // Gửi thông báo khi yêu cầu kết bạn được chấp nhận
             sendFriendRequestAcceptedNotification(user.getUsername());  // Gửi thông báo cho người gửi yêu cầu
 
-            // Update local user object to reflect the change
             user.setFriendStatus(currentUserId, User.FriendStatus.ACCEPTED);
             userAdapter.updateUser(user, position);
 
@@ -251,13 +264,11 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         searchProgressBar.setVisibility(View.VISIBLE);
         
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
-            // Remove friend entry from current user document
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), FieldValue.delete()
             );
             
-            // Remove friend entry from other user document
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, FieldValue.delete()
@@ -268,7 +279,6 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Friend request rejected", Toast.LENGTH_SHORT).show();
             
-            // Update local user object to reflect the change
             if (user.getFriends() != null) {
                 user.getFriends().remove(currentUserId);
             }
@@ -288,13 +298,11 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         searchProgressBar.setVisibility(View.VISIBLE);
         
         firestore.runTransaction((Transaction.Function<Void>) transaction -> {
-            // Remove friend entry from current user document
             transaction.update(
                     firestore.collection("users").document(currentUserId),
                     "friends." + user.getId(), FieldValue.delete()
             );
             
-            // Remove friend entry from other user document
             transaction.update(
                     firestore.collection("users").document(user.getId()),
                     "friends." + currentUserId, FieldValue.delete()
@@ -305,7 +313,6 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Friend request canceled", Toast.LENGTH_SHORT).show();
             
-            // Update local user object to reflect the change
             if (user.getFriends() != null) {
                 user.getFriends().remove(currentUserId);
             }
@@ -337,7 +344,6 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
 
     private void sendFriendRequestReceivedNotification(String friendName) {
         try {
-            // Proceed with creating and sending the notification
             String title = getString(R.string.friend_request_received_title);
             String content = String.format(getString(R.string.friend_request_received_content), friendName);
 
@@ -352,14 +358,12 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             notificationManager.notify(1, builder.build());
 
         } catch (SecurityException e) {
-            // If permission is denied, do nothing (no notification will be sent)
             Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
         }
     }
 
     private void sendFriendRequestAcceptedNotification(String friendName) {
         try {
-            // Proceed with creating and sending the notification
             String title = getString(R.string.friend_request_accepted_title);
             String content = String.format(getString(R.string.friend_request_accepted_content), friendName);
 
@@ -374,7 +378,6 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             notificationManager.notify(2, builder.build());
 
         } catch (SecurityException e) {
-            // If permission is denied, do nothing (no notification will be sent)
             Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
         }
     }
@@ -391,6 +394,33 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
+    }
+    private void setupFriendStatusListener(List<User> users) {
+        if (currentUserId == null) return;
+
+        // Get a snapshot of the current user document for real-time updates
+        firestore.collection("users").document(currentUserId)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null || !snapshot.exists()) {
+                        return;
+                    }
+
+                    Map<String, Object> friendsData =
+                            snapshot.contains("friends") ?
+                                    (Map<String, Object>) snapshot.get("friends") :
+                                    new HashMap<>();
+
+                    // Update local users with latest friend status
+                    for (int i = 0; i < users.size(); i++) {
+                        User user = users.get(i);
+                        if (friendsData.containsKey(user.getId())) {
+                            String status = (String) friendsData.get(user.getId());
+                            user.setFriendStatus(currentUserId,
+                                    User.FriendStatus.fromString(status));
+                            userAdapter.updateUser(user, i);
+                        }
+                    }
+                });
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.lt_mobile_nhom4.components;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -162,8 +163,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 return;
             }
 
+
             User.FriendStatus status = user.getFriendStatus(currentUserId);
-            
+            Log.e("UserAdapter", "Friend status for user " + ": " + status);
+
             switch (status) {
                 case ACCEPTED:
                     addFriendButton.setVisibility(View.GONE);

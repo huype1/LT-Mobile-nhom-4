@@ -60,7 +60,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void deleteFirestoreData(String uid) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseFirestore db =  MyApplication.getFirestore();
         DocumentReference userRef = db.collection("users").document(uid);
         userRef.delete().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

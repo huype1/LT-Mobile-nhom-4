@@ -33,6 +33,7 @@ import com.bumptech.glide.Glide;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
+import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.example.lt_mobile_nhom4.components.ImageHistory;
 import com.example.lt_mobile_nhom4.components.ImageHistoryAdapter;
@@ -90,7 +91,7 @@ public class CameraFragment extends Fragment {
 
         REQUIRED_PERMISSIONS = permissions.toArray(new String[0]);
 
-        db = FirebaseFirestore.getInstance();
+        db =  MyApplication.getFirestore();
     }
 
     @Nullable

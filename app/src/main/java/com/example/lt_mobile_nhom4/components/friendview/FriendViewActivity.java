@@ -34,7 +34,6 @@ public class FriendViewActivity extends AppCompatActivity {
 
         friendList = FriendData.getFriends(this);
 
-        // Hiển thị mặc định "mọi người"
         updatePhotosForEveryone();
 
         photoAdapter = new PhotoAdapter(this, displayedPhotos);

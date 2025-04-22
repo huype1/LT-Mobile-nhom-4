@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     Button logoutButton;
     Button searchButton;
     ImageView imgProfile;
-    private SharedPreferencesManager prefsManager;
+    SharedPreferencesManager prefsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,4 +138,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

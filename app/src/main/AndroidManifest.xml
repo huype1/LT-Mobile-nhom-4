@@ -17,6 +17,7 @@
             tools:ignore="ScopedStorage" />
 
     <application
+            android:name=".MyApplication"
             android:allowBackup="true"
             android:dataExtractionRules="@xml/data_extraction_rules"
             android:fullBackupContent="@xml/backup_rules"
@@ -28,7 +29,7 @@
             tools:targetApi="31">
         <activity android:name=".AuthActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -58,5 +59,6 @@
         </receiver>
 
     </application>
+
 
 </manifest>

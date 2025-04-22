@@ -4,6 +4,7 @@ import static com.example.lt_mobile_nhom4.utils.Helper.isValidEmail;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,13 +22,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.lt_mobile_nhom4.AuthActivity;
+import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginFragment extends Fragment {
 
-    private EditText    emailEditText, passwordEditText;
+    private EditText emailEditText, passwordEditText;
     private Button loginButton;
     private CheckBox rememberMeCheckBox;
     private FirebaseAuth mAuth;
@@ -83,6 +86,33 @@ public class LoginFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        
+        // Save the current state
+        String email = emailEditText != null ? emailEditText.getText().toString() : "";
+        String password = passwordEditText != null ? passwordEditText.getText().toString() : "";
+        boolean rememberMe = rememberMeCheckBox != null && rememberMeCheckBox.isChecked();
+        
+        // Recreate the view with the appropriate layout
+        ViewGroup parent = (ViewGroup) getView().getParent();
+        int index = parent != null ? parent.indexOfChild(getView()) : 0;
+        
+        View newView = onCreateView(LayoutInflater.from(getContext()), parent, null);
+        
+        // Restore the state
+        if (emailEditText != null) emailEditText.setText(email);
+        if (passwordEditText != null) passwordEditText.setText(password);
+        if (rememberMeCheckBox != null) rememberMeCheckBox.setChecked(rememberMe);
+        
+        // Replace the old view with the new one
+        if (parent != null) {
+            parent.removeViewAt(index);
+            parent.addView(newView, index);
+        }
+    }
+
     private void loadSavedCredentials() {
         if (sharedPreferences.getBoolean(KEY_REMEMBER, false)) {
             emailEditText.setText(sharedPreferences.getString(KEY_EMAIL, ""));
@@ -118,7 +148,6 @@ public class LoginFragment extends Fragment {
             return;
         }
 
-        // Save credentials if remember me is checked
         saveCredentials(email, password);
 
         mAuth.signInWithEmailAndPassword(email, password)
@@ -126,6 +155,8 @@ public class LoginFragment extends Fragment {
                     Log.d("LoginFragment", task.toString());
 
                     if (task.isSuccessful()) {
+                        clearFirestoreCache();
+
                         if (callback != null) {
                             callback.onAuthSuccess();
                         }
@@ -134,6 +165,12 @@ public class LoginFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void clearFirestoreCache() {
+        MyApplication.getFirestore().clearPersistence()
+                .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Firestore cache cleared successfully"))
+                .addOnFailureListener(e -> Log.e("LoginFragment", "Error clearing Firestore cache", e));
     }
 
     private void handleForgotPassword() {
