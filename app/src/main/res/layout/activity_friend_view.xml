@@ -37,15 +37,33 @@
             android:layout_height="20dp"
             android:layout_marginStart="4dp"
             android:src="@drawable/ic_arrow_drop_down"
-            android:rotation="0"
-            app:tint="#FFFFFF" />
+            android:rotation="0"/>
     </LinearLayout>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp"    />
+
+    <LinearLayout
+        android:id="@+id/bottom_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="10dp">
+        <ImageButton
+            android:id="@+id/camera"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@null"
+            android:src="@drawable/ic_camera"
+            android:contentDescription="Camera" />
+    </LinearLayout>
 </LinearLayout>
 

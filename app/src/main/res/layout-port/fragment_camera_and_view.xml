@@ -168,6 +168,7 @@
                     android:textSize="@dimen/_16sdp"/>
 
                 <ImageView
+                    android:id="@+id/arrow_back"
                     android:layout_width="@dimen/_45sdp"
                     android:layout_height="@dimen/_45sdp"
                     android:layout_marginTop="@dimen/_10sdp"
