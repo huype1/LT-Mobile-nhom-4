@@ -40,7 +40,7 @@
                 <EditText
                     android:id="@+id/text_add_message"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:layout_marginHorizontal="@dimen/_30sdp"
@@ -48,7 +48,7 @@
                     android:layout_marginBottom="@dimen/_10sdp"
                     android:background="@drawable/background_text"
                     android:gravity="center"
-                    android:hint="Thêm một tin nhắn"
+                    android:hint="@string/add_description"
                     android:textColor="@color/white"
                     android:textColorHint="@color/white"
                     android:visibility="visible" />
@@ -73,7 +73,7 @@
                 <LinearLayout
                     android:id="@+id/capture_setting"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="@dimen/_30sdp"
                     android:orientation="horizontal"
@@ -203,22 +203,30 @@
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="@dimen/_45sdp"
-            android:visibility="gone">
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/history_recycler_view"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical"-->
+<!--            android:layout_marginTop="@dimen/_45sdp">-->
 
-            <ImageView
-                android:id="@+id/image_upload"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_300sdp"
-                android:padding="@dimen/_5sdp"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                android:background="@color/black"/>
-        </LinearLayout>
+<!--            <LinearLayout-->
+<!--                android:id="@+id/image_history_layout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:padding="@dimen/_10sdp"-->
+<!--                android:background="@color/bg">-->
+
+<!--                <ImageView-->
+<!--                    android:id="@+id/image_history"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="@dimen/_300sdp"-->
+<!--                    android:padding="@dimen/_5sdp"-->
+<!--                    android:adjustViewBounds="true"-->
+<!--                    android:scaleType="fitCenter"-->
+<!--                    android:background="@color/black"/>-->
+<!--            </LinearLayout>-->
+<!--        </androidx.recyclerview.widget.RecyclerView>-->
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

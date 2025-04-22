@@ -15,7 +15,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/default_avatar"
+        android:src="@drawable/person_24px"
         android:background="@drawable/avatar_circle_bg"
         android:padding="1dp"
         android:layout_marginEnd="12dp"

@@ -35,7 +35,6 @@ public class PhotoDetailAdapter extends RecyclerView.Adapter<PhotoDetailAdapter.
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.imageView.setImageResource(photoList.get(position).getResId());
     }
 
     @Override
