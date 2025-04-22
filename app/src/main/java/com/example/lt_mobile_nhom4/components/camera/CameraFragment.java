@@ -260,6 +260,7 @@ public class CameraFragment extends Fragment {
                                 previewView.setVisibility(View.VISIBLE);
                                 imageViewLayout.setVisibility(View.GONE);
                                 cameraCapture.setVisibility(View.VISIBLE);
+                                captureSetting.setVisibility(View.VISIBLE);
                                 sendController.setVisibility(View.GONE);
 
                                 Toast.makeText(requireContext(), "Upload success: " + secureUrl, Toast.LENGTH_SHORT).show();
