@@ -26,6 +26,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,6 +38,7 @@ import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.example.lt_mobile_nhom4.components.ImageHistory;
 import com.example.lt_mobile_nhom4.components.ImageHistoryAdapter;
+import com.example.lt_mobile_nhom4.components.image_view.ImageHistoryFragment;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -110,8 +112,8 @@ public class CameraFragment extends Fragment {
         sendButton = view.findViewById(R.id.image_send);
         cancelButton = view.findViewById(R.id.image_cancel);
         text = view.findViewById(R.id.text_add_message);
-        recyclerView = view.findViewById(R.id.history_recycler_view); // RecyclerView trong layout
-        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView = view.findViewById(R.id.history_recycler_view); // RecyclerView trong layout
+//        recyclerView.setLayoutManager(layoutManager);
         return view;
     }
 
@@ -165,32 +167,48 @@ public class CameraFragment extends Fragment {
         setUpImageSend();
         cancelButton.setOnClickListener(v -> resetCamera());
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerView.setAdapter(adapter);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+//        recyclerView.setAdapter(adapter);
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int firstVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-                int lastVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-
-                // Loop through the visible items and hide/show ImageViews based on scroll
-                for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
-                    View itemView = recyclerView.getLayoutManager().findViewByPosition(i);
-                    if (itemView != null) {
-                        ImageView imageView = itemView.findViewById(R.id.history_image); // ImageView trong item layout của RecyclerView
-                        if (imageView != null && imageView.getVisibility() == View.INVISIBLE) {
-                            imageView.setVisibility(View.VISIBLE); // Hiển thị ImageView khi cuộn đến item
-                        }
-                    }
-                }
-            }
-        });
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//
+//                int firstVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+//                int lastVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+//
+//                // Loop through the visible items and hide/show ImageViews based on scroll
+//                for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
+//                    View itemView = recyclerView.getLayoutManager().findViewByPosition(i);
+//                    if (itemView != null) {
+//                        ImageView imageView = itemView.findViewById(R.id.history_image); // ImageView trong item layout của RecyclerView
+//                        if (imageView != null && imageView.getVisibility() == View.INVISIBLE) {
+//                            imageView.setVisibility(View.VISIBLE); // Hiển thị ImageView khi cuộn đến item
+//                        }
+//                    }
+//                }
+//            }
+//        });
 
         LinearLayout historyController = view.findViewById(R.id.history_controller);
-        historyController.setOnClickListener(v -> loadImageHistory());
+        historyController.setOnClickListener(v -> {
+            // Create new fragment
+            ImageHistoryFragment imageHistoryFragment = new ImageHistoryFragment();
+
+            // Get fragment manager
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+
+            // Start transaction
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, imageHistoryFragment) // Use main container
+                    .addToBackStack(null) // Allow back navigation
+                    .commit();
+
+            // Hide camera UI
+            previewView.setVisibility(View.GONE);
+            view.findViewById(R.id.linear_bottom).setVisibility(View.GONE);
+        });
 
         // Initial load
         loadImageHistory();

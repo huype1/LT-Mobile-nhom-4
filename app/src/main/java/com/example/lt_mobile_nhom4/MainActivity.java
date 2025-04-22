@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.cloudinary.android.MediaManager;
 import com.example.lt_mobile_nhom4.components.UserSearchFragment;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
+import com.example.lt_mobile_nhom4.components.image_view.ImageHistoryFragment;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -32,8 +33,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 //    private String cloudName = "CLOUDINARY_URL=cloudinary://117691381147521:Q5uRqKIvX094XNSXkekVHZIFGqM@dkjha8fug";
-    Button logoutButton;
-    Button searchButton;
+//    Button logoutButton;
+//    Button searchButton;
     ImageView imgProfile;
     SharedPreferencesManager prefsManager;
 
@@ -45,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
 
         initCloudinary();
         prefsManager = SharedPreferencesManager.getInstance(this);
-        logoutButton = findViewById(R.id.logoutButton);
-        searchButton = findViewById(R.id.searchButton);
-        imgProfile = findViewById(R.id.img_profile);
+//        logoutButton = findViewById(R.id.logoutButton);
+//        searchButton = findViewById(R.id.searchButton);
+//        imgProfile = findViewById(R.id.img_profile);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -55,21 +56,21 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, AuthActivity.class);
-            startActivity(intent);
-            finish();
-        });
+//        logoutButton.setOnClickListener(v -> {
+//            FirebaseAuth.getInstance().signOut();
+//            Intent intent = new Intent(this, AuthActivity.class);
+//            startActivity(intent);
+//            finish();
+//        });
+//
+//        searchButton.setOnClickListener(v -> {
+//            openUserSearchFragment();
+//        });
 
-        searchButton.setOnClickListener(v -> {
-            openUserSearchFragment();
-        });
-
-        imgProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-            startActivity(intent);
-        });
+//        imgProfile.setOnClickListener(v -> {
+//            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+//            startActivity(intent);
+//        });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)

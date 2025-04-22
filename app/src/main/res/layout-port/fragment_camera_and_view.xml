@@ -5,6 +5,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/bg">
 
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -44,14 +50,13 @@
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:layout_marginHorizontal="@dimen/_30sdp"
-                    android:paddingHorizontal="@dimen/_10sdp"
+                    android:padding="@dimen/_10sdp"
                     android:layout_marginBottom="@dimen/_10sdp"
                     android:background="@drawable/background_text"
                     android:gravity="center"
                     android:hint="@string/add_description"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/white"
-                    android:visibility="visible" />
+                    android:textColorHint="@color/white" />
             </RelativeLayout>
         </LinearLayout>
 
@@ -177,11 +182,11 @@
     </com.google.android.material.appbar.AppBarLayout>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/history_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_45sdp"
-        android:nestedScrollingEnabled="false" />
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/history_recycler_view"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="@dimen/_45sdp"-->
+<!--        android:nestedScrollingEnabled="false" />-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

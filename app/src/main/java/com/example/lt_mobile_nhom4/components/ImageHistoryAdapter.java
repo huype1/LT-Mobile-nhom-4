@@ -39,7 +39,7 @@ public class ImageHistoryAdapter extends RecyclerView.Adapter<ImageHistoryAdapte
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_image_history, parent, false);
+                .inflate(R.layout.item_image_history_full, parent, false);
         return new ImageViewHolder(view);
     }
 
@@ -112,9 +112,9 @@ public class ImageHistoryAdapter extends RecyclerView.Adapter<ImageHistoryAdapte
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.history_image);
+            imageView = itemView.findViewById(R.id.imageView);
             userAvatarView = itemView.findViewById(R.id.image_friend_avatar);
-            descriptionText = itemView.findViewById(R.id.history_description);
+            descriptionText = itemView.findViewById(R.id.descriptionText);
             usernameText = itemView.findViewById(R.id.text_friend_name);
             timestampText = itemView.findViewById(R.id.history_timestamp);
         }
