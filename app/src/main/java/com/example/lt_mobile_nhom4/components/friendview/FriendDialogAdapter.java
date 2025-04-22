@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.lt_mobile_nhom4.R;
+
 import java.text.Normalizer;
 import java.util.List;
 
@@ -59,7 +61,7 @@ public class FriendDialogAdapter extends BaseAdapter {
         if (resId != 0) {
             imageAvatar.setImageResource(resId);
         } else {
-            imageAvatar.setImageResource(R.drawable.default_avatar);
+            imageAvatar.setImageResource(R.drawable.person_24px);
         }
 
         textName.setText(friend.getName());

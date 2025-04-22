@@ -1,72 +1,43 @@
 package com.example.lt_mobile_nhom4.components.friendview;
 
+import android.content.Context;
+
+import com.example.lt_mobile_nhom4.R;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FriendData {
-    public static List<Friend> getFriends() {
-        List<Friend> friends = new ArrayList<>();
+    public static List<Friend> getFriends(Context context) {
+        List<Friend> friendList = new ArrayList<>();
 
-        Friend an = new Friend("An", R.drawable.an);
-        an.addPhoto(R.drawable.an1);
-        an.addPhoto(R.drawable.an2);
-        an.addPhoto(R.drawable.an3);
-        for (Photo photo : an.getPhotos()) photo.setFriend(an);
+        String[] names = {"An", "Bình", "Chi"};
+        int[] avatars = {R.drawable.person_24px, R.drawable.person_24px, R.drawable.person_24px};
 
-        Friend binh = new Friend("Bình", R.drawable.binh);
-        binh.addPhoto(R.drawable.binh1);
-        binh.addPhoto(R.drawable.binh2);
-        for (Photo photo : binh.getPhotos()) photo.setFriend(binh);
+        File baseDir = new File(context.getExternalFilesDir(null), "images");
 
-        Friend chi = new Friend("Chi", R.drawable.chi);
-        chi.addPhoto(R.drawable.chi1);
-        chi.addPhoto(R.drawable.chi2);
-        chi.addPhoto(R.drawable.chi3);
-        for (Photo photo : chi.getPhotos()) photo.setFriend(chi);
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
+            int avatar = avatars[i];
 
-        Friend dung = new Friend("Dung", R.drawable.dung);
-        dung.addPhoto(R.drawable.dung1);
-        dung.addPhoto(R.drawable.dung2);
-        for (Photo photo : dung.getPhotos()) photo.setFriend(dung);
+            File friendDir = new File(baseDir, name);
+            List<Photo> photoList = new ArrayList<>();
 
-        Friend en = new Friend("Én", R.drawable.en);
-        en.addPhoto(R.drawable.en1);
-        en.addPhoto(R.drawable.en2);
-        for (Photo photo : en.getPhotos()) photo.setFriend(en);
+            if (friendDir.exists()) {
+                File[] imageFiles = friendDir.listFiles((dir, filename) -> filename.endsWith(".jpg") || filename.endsWith(".png"));
+                if (imageFiles != null) {
+                    Arrays.sort(imageFiles); // Optional: sort theo tên
+                    for (File image : imageFiles) {
+                        photoList.add(new Photo(image.getAbsolutePath()));
+                    }
+                }
+            }
 
-        Friend giap = new Friend("Giáp", R.drawable.giap);
-        giap.addPhoto(R.drawable.giap1);
-        giap.addPhoto(R.drawable.giap2);
-        for (Photo photo : giap.getPhotos()) photo.setFriend(giap);
+            friendList.add(new Friend(name, avatar, photoList));
+        }
 
-        Friend huy = new Friend("Huy", R.drawable.huy);
-        huy.addPhoto(R.drawable.huy1);
-        huy.addPhoto(R.drawable.huy2);
-        huy.addPhoto(R.drawable.huy3);
-        for (Photo photo : huy.getPhotos()) photo.setFriend(huy);
-
-        Friend khanh = new Friend("Khánh", R.drawable.khanh);
-        khanh.addPhoto(R.drawable.khanh1);
-        khanh.addPhoto(R.drawable.khanh2);
-        khanh.addPhoto(R.drawable.khanh3);
-        for (Photo photo : khanh.getPhotos()) photo.setFriend(khanh);
-
-        Friend lien = new Friend("Liên", R.drawable.lien);
-        lien.addPhoto(R.drawable.lien1);
-        lien.addPhoto(R.drawable.lien2);
-        lien.addPhoto(R.drawable.lien3);
-        for (Photo photo : lien.getPhotos()) photo.setFriend(lien);
-
-        friends.add(an);
-        friends.add(binh);
-        friends.add(chi);
-        friends.add(dung);
-        friends.add(en);
-        friends.add(giap);
-        friends.add(huy);
-        friends.add(khanh);
-        friends.add(lien);
-
-        return friends;
+        return friendList;
     }
 }

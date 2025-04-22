@@ -1,23 +1,15 @@
 package com.example.lt_mobile_nhom4.components.friendview;
 
-public class Photo {
-    private int resId;
+import java.io.Serializable;
 
-    private Friend friend;
+public class Photo implements Serializable {
+    private String filePath;
 
-    public Friend getFriend() {
-        return friend;
+    public Photo(String filePath) {
+        this.filePath = filePath;
     }
 
-    public void setFriend(Friend friend) {
-        this.friend = friend;
-    }
-
-    public Photo(int resId) {
-        this.resId = resId;
-    }
-
-    public int getResId() {
-        return resId;
+    public String getFilePath() {
+        return filePath;
     }
 }

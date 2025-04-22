@@ -1,97 +1,93 @@
 package com.example.lt_mobile_nhom4.components.friendview;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.view.View;
-import android.widget.*;
+import android.widget.ImageView;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.*;
+
+import com.example.lt_mobile_nhom4.R;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FriendViewActivity extends AppCompatActivity {
 
-    private TextView friendSelector;
-    private ImageView dropdownIcon;
+    private TextView Everyone;
     private RecyclerView recyclerView;
     private PhotoAdapter photoAdapter;
-    private List<Friend> friends;
+
+    private List<Friend> friendList;
+    private List<Photo> displayedPhotos = new ArrayList<>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_view);
 
-        friendSelector = findViewById(R.id.friend_selector);
-        dropdownIcon = findViewById(R.id.dropdown_icon);
+        Everyone = findViewById(R.id.friend_selector);
         recyclerView = findViewById(R.id.recycler_view);
 
+        friendList = FriendData.getFriends(this);
+
+        // Hiển thị mặc định "mọi người"
+        updatePhotosForEveryone();
+
+        photoAdapter = new PhotoAdapter(this, displayedPhotos);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-
-        // Mặc định khởi tạo adapter với bạn đầu tiên (tránh null)
-        friends = FriendData.getFriends();
-        Friend firstFriend = friends.get(0);
-        for (Photo photo : firstFriend.getPhotos()) {
-            photo.setFriend(firstFriend);
-        }
-        photoAdapter = new PhotoAdapter(this, firstFriend, firstFriend.getPhotos());
         recyclerView.setAdapter(photoAdapter);
 
-        showAllPhotos();
-
-        findViewById(R.id.friend_selector_container).setOnClickListener(v -> showFriendDialog());
+        Everyone.setOnClickListener(v -> showFriendPicker());
     }
 
-    private void showAllPhotos() {
-        List<Photo> allPhotos = new ArrayList<>();
-        for (Friend f : friends) {
-            for (Photo p : f.getPhotos()) {
-                p.setFriend(f); // 🧩 Gán friend cho từng photo
-                allPhotos.add(p);
-            }
+    private void updatePhotosForEveryone() {
+        displayedPhotos.clear();
+        for (Friend friend : friendList) {
+            displayedPhotos.addAll(friend.getPhotos());
         }
-        photoAdapter = new PhotoAdapter(this, null, allPhotos); // null vì không phải một friend cụ thể
-        recyclerView.setAdapter(photoAdapter);
+        photoAdapter.notifyDataSetChanged();
+        Everyone.setText("Mọi người");
     }
 
-    private void showFriendDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.friend_menu_dialog, null);
-        ListView listView = dialogView.findViewById(R.id.friend_list_view);
+    private void updatePhotosForFriend(Friend friend) {
+        displayedPhotos.clear();
+        displayedPhotos.addAll(friend.getPhotos());
+        photoAdapter.notifyDataSetChanged();
+        Everyone.setText(friend.getName());
+    }
 
-        List<Friend> displayFriends = new ArrayList<>();
-        displayFriends.add(new Friend("Mọi người", R.drawable.ic_all_friends, new ArrayList<>()));
-        displayFriends.addAll(friends);
+    private void showFriendPicker() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_photo_actions, null);
 
-        FriendDialogAdapter adapter = new FriendDialogAdapter(this, displayFriends);
-        listView.setAdapter(adapter);
+        // Bổ sung các nút chọn bạn trong dialog này tùy thích
+        for (Friend friend : friendList) {
+            TextView tv = new TextView(this);
+            tv.setText(friend.getName());
+            tv.setTextSize(18);
+            tv.setPadding(20, 20, 20, 20);
+            tv.setOnClickListener(v -> {
+                updatePhotosForFriend(friend);
+                dialog.dismiss();
+            });
+            ((ViewGroup) view).addView(tv);
+        }
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .create();
-
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            Friend selectedFriend = displayFriends.get(position);
-            friendSelector.setText(selectedFriend.getName());
-
-            if (selectedFriend.getName().equals("Mọi người")) {
-                showAllPhotos();
-            } else {
-                for (Photo photo : selectedFriend.getPhotos()) {
-                    photo.setFriend(selectedFriend); // 🧩 Gán friend cho từng photo
-                }
-                photoAdapter = new PhotoAdapter(this, selectedFriend, selectedFriend.getPhotos());
-                recyclerView.setAdapter(photoAdapter);
-            }
-
-            dropdownIcon.setRotation(0);
+        TextView everyone = new TextView(this);
+        everyone.setText("Mọi người");
+        everyone.setTextSize(18);
+        everyone.setPadding(20, 20, 20, 20);
+        everyone.setOnClickListener(v -> {
+            updatePhotosForEveryone();
             dialog.dismiss();
         });
+        ((ViewGroup) view).addView(everyone);
 
-        dialog.setOnDismissListener(d -> dropdownIcon.setRotation(0));
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.setContentView(view);
         dialog.show();
-
-        dropdownIcon.setRotation(180);
     }
 }

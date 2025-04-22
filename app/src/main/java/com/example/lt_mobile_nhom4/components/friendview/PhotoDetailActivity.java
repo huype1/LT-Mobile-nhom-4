@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lt_mobile_nhom4.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.List;
@@ -38,7 +39,6 @@ public class PhotoDetailActivity extends AppCompatActivity {
         avatarImage = findViewById(R.id.image_friend_avatar);
         btnBack = findViewById(R.id.back);
         btnCamera = findViewById(R.id.camera);
-        btnMore = findViewById(R.id.more);
 
         // Lấy dữ liệu bạn bè và vị trí ảnh
         currentFriend = (Friend) getIntent().getSerializableExtra("friend");
