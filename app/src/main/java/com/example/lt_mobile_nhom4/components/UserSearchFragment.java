@@ -130,62 +130,85 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         searchProgressBar.setVisibility(View.VISIBLE);
         noResultsTextView.setVisibility(View.GONE);
 
-        firestore.collection("users")
-                .orderBy("username")
+        firestore.collection("users").document(currentUserId)
                 .get()
-                .addOnCompleteListener(task -> {
-                    searchProgressBar.setVisibility(View.GONE);
-                    
-                    if (task.isSuccessful()) {
-                        List<User> matchedUsers = new ArrayList<>();
-                        
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            // Get user data
-                            String username = document.getString("username");
-                            String fullName = document.getString("full-name");
-                            String phoneNumber = document.getString("phone-number");
-                            
-                            if ((username != null && username.toLowerCase().contains(searchQuery)) ||
-                                (fullName != null && fullName.toLowerCase().contains(searchQuery)) ||
-                                (phoneNumber != null && phoneNumber.contains(searchQuery))) {
-                                
-                                User user = new User();
-                                user.setId(document.getString("id"));
-                                user.setUsername(username);
-                                user.setFullName(fullName);
-                                user.setPhoneNumber(phoneNumber);
-                                user.setEmail(document.getString("email"));
-                                user.setImageUrl(document.getString("image-url"));
-                                user.setCreatedAt(document.getString("created-at"));
-                                
-                                Map<String, String> friends = new HashMap<>();
-                                if (document.contains("friends")) {
-                                    Map<String, Object> friendsData = (Map<String, Object>) document.get("friends");
+                .addOnSuccessListener(userSnapshot -> {
+                    Map<String, Object> currentUserFriends = new HashMap<>();
+                    if (userSnapshot.contains("friends")) {
+                        currentUserFriends = (Map<String, Object>) userSnapshot.get("friends");
+                    }
 
-                                    Log.d(TAG, "Friends data: " + document.get("friends") + " " + friendsData);;
-                                    if (friendsData != null) {
-                                        for (Map.Entry<String, Object> entry : friendsData.entrySet()) {
-                                            friends.put(entry.getKey(), (String) entry.getValue());
+                    final Map<String, Object> friendsData = currentUserFriends;
+
+                    firestore.collection("users")
+                            .orderBy("username")
+                            .get()
+                            .addOnCompleteListener(task -> {
+                                searchProgressBar.setVisibility(View.GONE);
+
+                                if (task.isSuccessful()) {
+                                    List<User> matchedUsers = new ArrayList<>();
+
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+
+
+                                        String userId = document.getString("id");
+                                        String username = document.getString("username");
+                                        String fullName = document.getString("full-name");
+                                        String phoneNumber = document.getString("phone-number");
+
+                                        if ((username != null && username.toLowerCase().contains(searchQuery)) ||
+                                                (fullName != null && fullName.toLowerCase().contains(searchQuery)) ||
+                                                (phoneNumber != null && phoneNumber.contains(searchQuery))) {
+
+                                            User user = new User();
+                                            user.setId(userId);
+                                            user.setUsername(username);
+                                            user.setFullName(fullName);
+                                            user.setPhoneNumber(phoneNumber);
+                                            user.setEmail(document.getString("email"));
+                                            user.setImageUrl(document.getString("image-url"));
+                                            user.setCreatedAt(document.getString("created-at"));
+
+                                            // Set up friend status
+                                            Map<String, String> friends = new HashMap<>();
+                                            if (document.contains("friends")) {
+                                                Map<String, Object> userFriendsData = (Map<String, Object>) document.get("friends");
+                                                if (userFriendsData != null) {
+                                                    for (Map.Entry<String, Object> entry : userFriendsData.entrySet()) {
+                                                        friends.put(entry.getKey(), (String) entry.getValue());
+                                                    }
+                                                }
+                                            }
+                                            user.setFriends(friends);
+
+                                            // Set the correct friend status based on current user's friends data
+                                            if (friendsData.containsKey(userId)) {
+                                                String status = (String) friendsData.get(userId);
+                                                user.setFriendStatus(currentUserId, User.FriendStatus.fromString(status));
+                                            }
+
+                                            matchedUsers.add(user);
                                         }
                                     }
-                                }
-                                user.setFriends(friends);
-                                
-                                matchedUsers.add(user);
-                            }
-                        }
 
-                        if (matchedUsers.isEmpty()) {
-                            noResultsTextView.setVisibility(View.VISIBLE);
-                        } else {
-                            userAdapter.setUsers(matchedUsers);
-                            setupFriendStatusListener(matchedUsers);  // Add this line
-                        }
-                        
-                    } else {
-                        Log.e(TAG, "Error getting documents: ", task.getException());
-                        Toast.makeText(requireContext(), "Error searching for users", Toast.LENGTH_SHORT).show();
-                    }
+                                    if (matchedUsers.isEmpty()) {
+                                        noResultsTextView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        userAdapter.setUsers(matchedUsers);
+                                        setupFriendStatusListener(matchedUsers);
+                                    }
+
+                                } else {
+                                    Log.e(TAG, "Error getting documents: ", task.getException());
+                                    Toast.makeText(requireContext(), "Error searching for users", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    searchProgressBar.setVisibility(View.GONE);
+                    Log.e(TAG, "Error fetching current user data: ", e);
+                    Toast.makeText(requireContext(), "Error accessing user data", Toast.LENGTH_SHORT).show();
                 });
     }
 
