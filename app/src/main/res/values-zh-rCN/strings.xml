@@ -57,5 +57,6 @@
     <string name="friend_request_received_content">您已收到来自 %1$s 的好友请求。</string>
     <string name="friend_request_accepted_title">好友请求已被接受</string>
     <string name="friend_request_accepted_content">%1$s 已接受您的好友请求。</string>
-    <string name="add_description">历史</string>
+    <string name="add_description">添加消息</string>
+    <string name="history">历史</string>
 </resources>

@@ -1,49 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#000000"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_detail_photos"
+    <!-- RecyclerView hiển thị danh sách ảnh -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingTop="60dp"
-        android:paddingBottom="140dp"
-        android:overScrollMode="never"
-        android:layout_gravity="center" />
-
-    <!-- Tên bạn và avatar -->
-    <LinearLayout
-        android:id="@+id/avatar_name_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="16dp">
+        android:layout_weight="1">
 
         <ImageView
-            android:id="@+id/image_friend_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/avatar_circle_bg"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="8dp" />
-
-        <TextView
-            android:id="@+id/text_friend_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tên bạn"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:id="@+id/image_detail"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_300sdp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:background="@drawable/image_rounded"
+            android:contentDescription="Ảnh chi tiết"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
 
     <!-- Nút điều hướng dưới cùng -->
     <LinearLayout
@@ -54,7 +31,7 @@
         android:gravity="center"
         android:paddingStart="30dp"
         android:paddingEnd="70dp"
-        android:paddingBottom="32dp">
+        android:paddingBottom="24dp">
 
         <ImageButton
             android:id="@+id/back"
@@ -62,12 +39,12 @@
             android:layout_height="48dp"
             android:background="@null"
             android:contentDescription="Quay lại"
-            android:src="@drawable/ic_back"     />
+            android:src="@drawable/ic_back" />
 
         <Space
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/camera"
@@ -80,8 +57,6 @@
         <Space
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_weight="1"/>
-
-
+            android:layout_weight="1" />
     </LinearLayout>
 </LinearLayout>

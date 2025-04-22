@@ -34,7 +34,7 @@ public class PhotoDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_photo_detail);
 
         // Ánh xạ view
-        recyclerView = findViewById(R.id.recycler_detail_photos);
+        recyclerView = findViewById(R.id.history_recycler_view);
         textFriendName = findViewById(R.id.text_friend_name);
         avatarImage = findViewById(R.id.image_friend_avatar);
         btnBack = findViewById(R.id.back);

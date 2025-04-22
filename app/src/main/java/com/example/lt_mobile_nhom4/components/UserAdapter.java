@@ -161,8 +161,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 friendStatusText.setVisibility(View.GONE);
                 return;
             }
-            
-            // Update UI based on friendship status
+
             User.FriendStatus status = user.getFriendStatus(currentUserId);
             
             switch (status) {

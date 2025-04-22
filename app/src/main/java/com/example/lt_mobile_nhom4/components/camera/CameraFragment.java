@@ -1,10 +1,7 @@
 package com.example.lt_mobile_nhom4.components.camera;
 
-import static com.bumptech.glide.request.RequestOptions.option;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,19 +26,28 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.lt_mobile_nhom4.R;
+import com.example.lt_mobile_nhom4.components.ImageHistory;
+import com.example.lt_mobile_nhom4.components.ImageHistoryAdapter;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -67,6 +73,10 @@ public class CameraFragment extends Fragment {
     private View sendController;
     private File lastCapturedPhotoFile;
     private EditText text;
+
+    private RecyclerView recyclerView;
+    private ImageHistoryAdapter adapter;
+    private LinearLayoutManager layoutManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,9 +109,10 @@ public class CameraFragment extends Fragment {
         sendButton = view.findViewById(R.id.image_send);
         cancelButton = view.findViewById(R.id.image_cancel);
         text = view.findViewById(R.id.text_add_message);
+        recyclerView = view.findViewById(R.id.history_recycler_view); // RecyclerView trong layout
+        recyclerView.setLayoutManager(layoutManager);
         return view;
     }
-
 
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderListenableFuture = ProcessCameraProvider.getInstance(requireContext());
@@ -134,7 +145,9 @@ public class CameraFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if(allPermissionGranted()) {
+        adapter = new ImageHistoryAdapter();
+
+        if (allPermissionGranted()) {
             startCamera();
         } else {
             ActivityCompat.requestPermissions(
@@ -145,23 +158,42 @@ public class CameraFragment extends Fragment {
         }
         cameraExecutor = Executors.newSingleThreadExecutor();
 
-        cameraFlash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleFlash();
-            }
-        });
-
-        cameraFlip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleCamera();
-            }
-        });
-
+        cameraFlash.setOnClickListener(v -> toggleFlash());
+        cameraFlip.setOnClickListener(v -> toggleCamera());
         cameraCapture.setOnClickListener(v -> takePhoto());
         setUpImageSend();
         cancelButton.setOnClickListener(v -> resetCamera());
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.setAdapter(adapter);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int firstVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                int lastVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+
+                // Loop through the visible items and hide/show ImageViews based on scroll
+                for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
+                    View itemView = recyclerView.getLayoutManager().findViewByPosition(i);
+                    if (itemView != null) {
+                        ImageView imageView = itemView.findViewById(R.id.history_image); // ImageView trong item layout của RecyclerView
+                        if (imageView != null && imageView.getVisibility() == View.INVISIBLE) {
+                            imageView.setVisibility(View.VISIBLE); // Hiển thị ImageView khi cuộn đến item
+                        }
+                    }
+                }
+            }
+        });
+
+        LinearLayout historyController = view.findViewById(R.id.history_controller);
+        historyController.setOnClickListener(v -> loadImageHistory());
+
+        // Initial load
+        loadImageHistory();
+
     }
 
     @Override
@@ -210,15 +242,7 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         requireActivity().runOnUiThread(() -> {
-                            previewView.setVisibility(View.GONE);
-                            imageViewLayout.setVisibility(View.VISIBLE);
-
-                            ImageView imageView = requireView().findViewById(R.id.image_view);
-                            imageView.setImageURI(Uri.fromFile(photoFile));
-
-                            captureSetting.setVisibility(View.GONE);
-                            sendController.setVisibility(View.VISIBLE);
-
+                            showImagePreview(photoFile);
                         });
                         Log.d(TAG, "đã lưu: " + photoFile.getAbsolutePath());
                     }
@@ -234,6 +258,18 @@ public class CameraFragment extends Fragment {
         );
     }
 
+    private void showImagePreview(File file) {
+        previewView.setVisibility(View.GONE);
+        imageViewLayout.setVisibility(View.VISIBLE);
+        captureSetting.setVisibility(View.GONE);
+        sendController.setVisibility(View.VISIBLE);
+
+        // Dùng Glide để hiển thị ảnh
+        ImageView imageView = requireView().findViewById(R.id.image_view);
+        Glide.with(requireContext()).load(file).into(imageView);
+    }
+
+
     private void setUpImageSend() {
         sendButton.setOnClickListener(v -> {
             if (lastCapturedPhotoFile != null) {
@@ -243,6 +279,7 @@ public class CameraFragment extends Fragment {
             }
         });
     }
+
     private void uploadToCloudinary(String filePath) {
         String requestedId = MediaManager.get().upload(filePath)
                 .option("folder", "image_uploads")
@@ -260,44 +297,47 @@ public class CameraFragment extends Fragment {
 
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
-                        requireActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                        requireActivity().runOnUiThread(() -> {
+                            String secureUrl = (String) resultData.get("secure_url");
+                            Log.d(TAG, "Upload success: " + requestId + " " + secureUrl);
 
-                                String secureUrl = (String) resultData.get("secure_url");
-                                Log.d(TAG, "Upload success: " + requestId + " " + secureUrl);
+                            String description = text.getText().toString().trim();
+                            String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                                    ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                                    : "Unknown User";
 
-                                String description = text.getText().toString().trim();
+                            // Create a new document with a unique ID
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("image_url", secureUrl);
+                            data.put("description", description);
+                            data.put("userId", userId);
+                            data.put("createdAt", System.currentTimeMillis());
 
-                                String userId = FirebaseAuth.getInstance().getCurrentUser() != null
-                                        ? FirebaseAuth.getInstance().getCurrentUser().getUid()
-                                        : "Tài khoản không xác định";
+                            db.collection("images").add(data)
+                                    .addOnSuccessListener(documentReference -> {
+                                        String documentId = documentReference.getId();
+                                        Log.d(TAG, "Image uploaded successfully with ID: " + documentId);
 
-                                Map<String, Object> data = new HashMap<>();
-                                data.put("image_url", secureUrl);
-                                data.put("description", description);
-                                data.put("userId", userId);
-                                data.put("createdAt", System.currentTimeMillis());
+                                        // Update the document to include its ID
+                                        db.collection("images").document(documentId)
+                                                .update("id", documentId)
+                                                .addOnSuccessListener(aVoid -> Log.d(TAG, "Document ID added successfully"))
+                                                .addOnFailureListener(e -> Log.e(TAG, "Error adding document ID", e));
 
-                                db.collection("images").add(data)
-                                        .addOnSuccessListener(documentReference -> {
-                                            Log.d(TAG, "Image uploaded successfully: " + documentReference.getId());
-                                            Toast.makeText(requireContext(), "Upload success", Toast.LENGTH_SHORT).show();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Log.e(TAG, "Error uploading image: ", e);
-                                            Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
-                                        });
+                                        Toast.makeText(requireContext(), "Upload success", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error uploading image: ", e);
+                                        Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
+                                    });
 
-                                Toast.makeText(requireContext(), "Upload success: " + secureUrl, Toast.LENGTH_SHORT).show();
-
-                                previewView.setVisibility(View.VISIBLE);
-                                imageViewLayout.setVisibility(View.GONE);
-                                cameraCapture.setVisibility(View.VISIBLE);
-                                captureSetting.setVisibility(View.VISIBLE);
-                                sendController.setVisibility(View.GONE);
-                                text.setText("");
-                            }
+                            // Reset UI
+                            previewView.setVisibility(View.VISIBLE);
+                            imageViewLayout.setVisibility(View.GONE);
+                            cameraCapture.setVisibility(View.VISIBLE);
+                            captureSetting.setVisibility(View.VISIBLE);
+                            sendController.setVisibility(View.GONE);
+                            text.setText("");
                         });
                     }
 
@@ -321,6 +361,38 @@ public class CameraFragment extends Fragment {
 
     }
 
+    private void loadImageHistory() {
+
+        db.collection("images")
+//                .whereEqualTo("userId", currentUserId)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<ImageHistory> imageHistories = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String imageUrl = document.getString("image_url");
+                        String description = document.getString("description");
+                        long timestamp = document.getLong("createdAt");
+                        SimpleDateFormat sdf = new SimpleDateFormat(" HH:mm dd/MM/yyyy", Locale.getDefault());
+
+                        String userId = document.getString("userId");
+
+                        imageHistories.add(new ImageHistory(imageUrl, description, userId, timestamp));
+                    }
+
+                    if (adapter != null) {
+                        adapter.setImageHistories(imageHistories);
+                    }
+
+                    Log.d(TAG, "Số ảnh load được: " + imageHistories.size());
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading image history", e);
+                    Toast.makeText(requireContext(), "Failed to load history", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void resetCamera() {
         previewView.setVisibility(View.VISIBLE);
         imageViewLayout.setVisibility(View.GONE);
@@ -330,6 +402,7 @@ public class CameraFragment extends Fragment {
         startCamera();
     }
 
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1001) {
             if (allPermissionGranted()) {
