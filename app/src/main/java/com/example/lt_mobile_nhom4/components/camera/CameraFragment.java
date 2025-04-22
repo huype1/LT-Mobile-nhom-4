@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,9 +35,12 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.lt_mobile_nhom4.R;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -44,6 +48,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CameraFragment extends Fragment {
+
+    private FirebaseFirestore db;
 
     private String[] REQUIRED_PERMISSIONS;
 
@@ -60,6 +66,7 @@ public class CameraFragment extends Fragment {
     private LinearLayout captureSetting;
     private View sendController;
     private File lastCapturedPhotoFile;
+    private EditText text;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,6 +79,8 @@ public class CameraFragment extends Fragment {
         }
 
         REQUIRED_PERMISSIONS = permissions.toArray(new String[0]);
+
+        db = FirebaseFirestore.getInstance();
     }
 
     @Nullable
@@ -89,6 +98,7 @@ public class CameraFragment extends Fragment {
         captureSetting = view.findViewById(R.id.capture_setting);
         sendButton = view.findViewById(R.id.image_send);
         cancelButton = view.findViewById(R.id.image_cancel);
+        text = view.findViewById(R.id.text_add_message);
         return view;
     }
 
@@ -245,7 +255,6 @@ public class CameraFragment extends Fragment {
 
                     @Override
                     public void onProgress(String requestId, long bytes, long totalBytes) {
-                        double progress = (double) bytes / totalBytes * 100;
                         Log.d(TAG, "Upload progress: " + requestId + " % (" + bytes + "/" + totalBytes + ")");
                     }
 
@@ -257,13 +266,37 @@ public class CameraFragment extends Fragment {
 
                                 String secureUrl = (String) resultData.get("secure_url");
                                 Log.d(TAG, "Upload success: " + requestId + " " + secureUrl);
+
+                                String description = text.getText().toString().trim();
+
+                                String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                                        ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                                        : "Tài khoản không xác định";
+
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("image_url", secureUrl);
+                                data.put("description", description);
+                                data.put("userId", userId);
+                                data.put("createdAt", System.currentTimeMillis());
+
+                                db.collection("images").add(data)
+                                        .addOnSuccessListener(documentReference -> {
+                                            Log.d(TAG, "Image uploaded successfully: " + documentReference.getId());
+                                            Toast.makeText(requireContext(), "Upload success", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e(TAG, "Error uploading image: ", e);
+                                            Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
+                                        });
+
+                                Toast.makeText(requireContext(), "Upload success: " + secureUrl, Toast.LENGTH_SHORT).show();
+
                                 previewView.setVisibility(View.VISIBLE);
                                 imageViewLayout.setVisibility(View.GONE);
                                 cameraCapture.setVisibility(View.VISIBLE);
                                 captureSetting.setVisibility(View.VISIBLE);
                                 sendController.setVisibility(View.GONE);
-
-                                Toast.makeText(requireContext(), "Upload success: " + secureUrl, Toast.LENGTH_SHORT).show();
+                                text.setText("");
                             }
                         });
                     }
@@ -293,6 +326,7 @@ public class CameraFragment extends Fragment {
         imageViewLayout.setVisibility(View.GONE);
         captureSetting.setVisibility(View.VISIBLE);
         sendController.setVisibility(View.GONE);
+        flashMode = ImageCapture.FLASH_MODE_OFF;
         startCamera();
     }
 
