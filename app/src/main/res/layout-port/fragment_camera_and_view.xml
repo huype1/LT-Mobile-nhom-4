@@ -82,34 +82,34 @@
                         android:id="@+id/camera_flash"
                         android:layout_width="@dimen/_45sdp"
                         android:layout_height="@dimen/_45sdp"
-                        android:layout_gravity="center"
-                        android:background="@color/amp_transparent"
-                        android:contentDescription="@null"
                         android:padding="@dimen/_5sdp"
+                        android:layout_gravity="center"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/camera_flash_off" />
+                        android:src="@drawable/camera_flash_off"
+                        android:background="@color/amp_transparent"
+                        android:contentDescription="@null"/>
 
                     <ImageButton
                         android:id="@+id/camera_capture"
                         android:layout_width="@dimen/_45sdp"
                         android:layout_height="@dimen/_45sdp"
-                        android:layout_gravity="center"
                         android:layout_weight="1"
-                        android:background="@color/amp_transparent"
-                        android:contentDescription="@null"
+                        android:layout_gravity="center"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/camera_capture" />
+                        android:src="@drawable/camera_capture"
+                        android:background="@color/amp_transparent"
+                        android:contentDescription="@null"/>
 
                     <ImageButton
                         android:id="@+id/camera_flip"
                         android:layout_width="@dimen/_45sdp"
                         android:layout_height="@dimen/_45sdp"
-                        android:layout_gravity="center"
-                        android:background="@color/amp_transparent"
-                        android:contentDescription="@null"
                         android:padding="@dimen/_5sdp"
+                        android:layout_gravity="center"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/camera_flip" />
+                        android:src="@drawable/camera_flip"
+                        android:background="@color/amp_transparent"
+                        android:contentDescription="@null"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -118,20 +118,20 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="@dimen/_30sdp"
-                    android:gravity="center"
                     android:orientation="horizontal"
+                    android:gravity="center"
                     android:visibility="gone">
 
                     <ImageButton
                         android:id="@+id/image_cancel"
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_45sdp"
-                        android:layout_gravity="center"
                         android:layout_weight="1"
-                        android:background="@color/amp_transparent"
-                        android:padding="@dimen/_5sdp"
+                        android:layout_gravity="center"
                         android:scaleType="fitCenter"
+                        android:padding="@dimen/_5sdp"
                         android:src="@drawable/camera_captured_cancel"
+                        android:background="@color/amp_transparent"
                         app:tint="@color/white" />
 
                     <ImageButton
@@ -139,14 +139,14 @@
                         android:layout_width="@dimen/_45sdp"
                         android:layout_height="@dimen/_45sdp"
                         android:layout_marginHorizontal="@dimen/_60sdp"
+                        android:src="@drawable/image_send_off"
                         android:background="@drawable/circle_mask"
-                        android:clipToOutline="true"
-                        android:src="@drawable/image_send_off" />
+                        android:clipToOutline="true"/>
 
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:layout_weight="1" />
+                        android:layout_weight="1"/>
                 </LinearLayout>
 
             </LinearLayout>
@@ -155,22 +155,22 @@
                 android:id="@+id/history_controller"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20sdp"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/_20sdp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Lịch sử"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/_16sdp" />
+                    android:textSize="@dimen/_16sdp"/>
 
                 <ImageView
                     android:layout_width="@dimen/_45sdp"
                     android:layout_height="@dimen/_45sdp"
                     android:layout_marginTop="@dimen/_10sdp"
-                    android:src="@drawable/history_down_arrow" />
+                    android:src="@drawable/history_down_arrow"/>
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -179,41 +179,17 @@
         android:id="@+id/view_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/_30sdp"
+        android:layout_marginHorizontal="@dimen/_15sdp"
         android:layout_gravity="bottom"
         android:elevation="4dp"
-        android:visibility="visible"
+        android:visibility="gone"
         android:background="@color/bg">
 
-        <LinearLayout
+        <ImageButton
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/image_library"
-                android:layout_width="@dimen/_45sdp"
-                android:layout_height="@dimen/_45sdp"
-                android:src="@drawable/image_library"
-                android:scaleType="fitCenter"
-                android:background="@color/amp_transparent"/>
-
-            <ImageButton
-                android:id="@+id/return_to_camera"
-                android:layout_width="@dimen/_45sdp"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_gravity="center"
-                android:background="@color/amp_transparent"
-                android:contentDescription="@null"
-                android:scaleType="fitCenter"
-                android:layout_marginHorizontal="@dimen/_60sdp"
-                android:src="@drawable/camera_capture" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
+            android:layout_height="@dimen/_45sdp"
+            android:src="@drawable/image_library"
+            android:background="@color/amp_transparent"/>
     </RelativeLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -221,7 +197,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="@dimen/_45sdp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:fillViewport="true"
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -230,17 +206,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/_16sdp">
+            android:layout_marginTop="@dimen/_45sdp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/image_upload"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_300sdp"
-                android:layout_marginBottom="@dimen/_20sdp"
+                android:padding="@dimen/_5sdp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 android:background="@color/black"/>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
