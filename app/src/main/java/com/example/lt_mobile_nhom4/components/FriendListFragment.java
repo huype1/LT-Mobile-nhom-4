@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FriendListFragment extends Fragment {
 
@@ -64,36 +65,42 @@ public class FriendListFragment extends Fragment {
         if (currentUserId == null) return;
 
         progressBar.setVisibility(View.VISIBLE);
-        noFriendsTextView.setVisibility(View.GONE); // Ensure it's hidden initially
+        noFriendsTextView.setVisibility(View.GONE);
 
         firestore.collection("users").document(currentUserId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     progressBar.setVisibility(View.GONE);
-                    if (documentSnapshot.exists() && documentSnapshot.contains("friends")) {
-                        List<User> friendList = new ArrayList<>();
-                        List<String> friendIds = new ArrayList<>(documentSnapshot.getData().keySet());
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> userData = documentSnapshot.getData();
 
-                        if (friendIds.isEmpty()) {
-                            noFriendsTextView.setVisibility(View.VISIBLE); // Show if no friends
+                        // Get the friends map specifically
+                        Map<String, String> friendsMap = (Map<String, String>) userData.get("friends");
+                        List<User> friendList = new ArrayList<>();
+
+                        if (friendsMap == null || friendsMap.isEmpty()) {
+                            noFriendsTextView.setVisibility(View.VISIBLE);
                             return;
                         }
 
-                        for (String friendId : friendIds) {
-                            firestore.collection("users").document(friendId).get()
-                                    .addOnSuccessListener(friendSnapshot -> {
-                                        if (friendSnapshot.exists()) {
-                                            User friend = friendSnapshot.toObject(User.class);
-                                            friendList.add(friend);
-                                            userAdapter.setUsers(friendList);
-
-                                            // Hide "no friends" text if at least one friend is found
-                                            noFriendsTextView.setVisibility(View.GONE);
-                                        }
-                                    })
-                                    .addOnFailureListener(e -> Log.e("FriendListFragment", "Error fetching friend data: ", e));
+                        // Now use the keys from the friends map
+                        for (String friendId : friendsMap.keySet()) {
+                            String status = friendsMap.get(friendId);
+                            if ("accepted".equals(status)) {
+                                firestore.collection("users").document(friendId).get()
+                                        .addOnSuccessListener(friendSnapshot -> {
+                                            if (friendSnapshot.exists()) {
+                                                User friend = friendSnapshot.toObject(User.class);
+                                                friendList.add(friend);
+                                                userAdapter.setUsers(friendList);
+                                                noFriendsTextView.setVisibility(View.GONE);
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> Log.e("FriendListFragment",
+                                                "Error fetching friend data: ", e));
+                            }
                         }
                     } else {
-                        noFriendsTextView.setVisibility(View.VISIBLE); // Show if no friends field
+                        noFriendsTextView.setVisibility(View.VISIBLE);
                     }
                 })
                 .addOnFailureListener(e -> {

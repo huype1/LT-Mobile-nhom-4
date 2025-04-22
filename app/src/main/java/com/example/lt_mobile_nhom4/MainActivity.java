@@ -1,5 +1,6 @@
 package com.example.lt_mobile_nhom4;
 
+import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
@@ -8,11 +9,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -26,8 +30,11 @@ import com.bumptech.glide.Glide; // Import Glide for image loading
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.UploadCallback;
 import com.cloudinary.android.callback.ErrorInfo;
+import com.example.lt_mobile_nhom4.components.friendview.Friend;
+import com.example.lt_mobile_nhom4.components.friendview.FriendDialogAdapter;
 import com.example.lt_mobile_nhom4.components.UserSearchFragment;
 import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
+import com.example.lt_mobile_nhom4.models.FriendModel;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -35,13 +42,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     ImageView imgProfile;
     private TextView tvFriendsCount;
+    private CardView friendsCountContainer;
     private SharedPreferencesManager prefsManager;
+    private FriendDialogAdapter friendsDialogAdapter;
+    private Dialog friendsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +63,16 @@ public class MainActivity extends AppCompatActivity {
 
         imgProfile = findViewById(R.id.imgProfile); // Initialize imgProfile
         tvFriendsCount = findViewById(R.id.tvFriendsCount);
+        friendsCountContainer = findViewById(R.id.friendsCountContainer);
+
+        initFriendsDialog();
 
         imgProfile.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
         });
+
+        friendsCountContainer.setOnClickListener(v -> showFriendsDialog());
 
         initCloudinary();
         prefsManager = SharedPreferencesManager.getInstance(this);
@@ -91,6 +108,71 @@ public class MainActivity extends AppCompatActivity {
         syncFriendsCount(); // Đồng bộ số lượng bạn bè
     }
 
+    private void initFriendsDialog() {
+        friendsDialog = new Dialog(this);
+        friendsDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        friendsDialog.setContentView(R.layout.dialog_friends_list);
+        
+        ListView friendsListView = friendsDialog.findViewById(R.id.friendsListView);
+        friendsDialogAdapter = new FriendDialogAdapter(this);
+        friendsListView.setAdapter(friendsDialogAdapter);
+        
+        Window window = friendsDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setLayout(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.WRAP_CONTENT);
+        }
+    }
+
+    private void showFriendsDialog() {
+        fetchFriendsData();
+        friendsDialog.show();
+    }
+
+    private void fetchFriendsData() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        
+        List<FriendModel> friendsList = new ArrayList<>();
+        
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists() && documentSnapshot.contains("friends")) {
+                    Map<String, Object> friendsMap = (Map<String, Object>) documentSnapshot.get("friends");
+                    if (friendsMap != null && !friendsMap.isEmpty()) {
+                        for (Map.Entry<String, Object> entry : friendsMap.entrySet()) {
+                            String friendId = entry.getKey();
+                            String status = (String) entry.getValue();
+                            
+                            if ("accepted".equals(status)) {
+                                // Fetch details for each friend
+                                db.collection("users").document(friendId).get()
+                                    .addOnSuccessListener(friendDoc -> {
+                                        if (friendDoc.exists()) {
+                                            String username = friendDoc.getString("username");
+                                            String fullName = friendDoc.getString("full-name");
+                                            String avatarUrl = friendDoc.getString("image-url");
+                                            
+                                            FriendModel friend = new FriendModel(
+                                                friendId, 
+                                                username != null ? username : "User", 
+                                                fullName != null ? fullName : "No Name",
+                                                avatarUrl
+                                            );
+                                            
+                                            friendsList.add(friend);
+                                            friendsDialogAdapter.setFriendList(friendsList);
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> Log.e("MainActivity", "Failed to fetch friend details", e));
+                            }
+                        }
+                    }
+                }
+            })
+            .addOnFailureListener(e -> Log.e("MainActivity", "Failed to fetch friends data", e));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -106,10 +188,9 @@ public class MainActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     String avatarUrl = documentSnapshot.getString("avatarUrl");
                     if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                        // Use Glide to load the avatar URL into the ImageView
                         Glide.with(this)
                             .load(avatarUrl)
-                            .placeholder(R.drawable.person_24px) // Default placeholder
+                            .placeholder(R.drawable.person_24px)
                             .into(imgProfile);
                     }
                 }
@@ -125,15 +206,56 @@ public class MainActivity extends AppCompatActivity {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("users").document(userId).collection("friends")
-                .addSnapshotListener((QuerySnapshot snapshot, FirebaseFirestoreException e) -> {
-                    if (e != null) {
-                        Log.e("MainActivity", "Error fetching friends count", e);
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("friends")) {
+                        Map<String, Object> friendsMap = (Map<String, Object>) documentSnapshot.get("friends");
+                        if (friendsMap != null) {
+                            // Count only accepted friends
+                            int acceptedFriendsCount = 0;
+                            for (Map.Entry<String, Object> entry : friendsMap.entrySet()) {
+                                if ("accepted".equals(entry.getValue())) {
+                                    acceptedFriendsCount++;
+                                }
+                            }
+                            updateFriendsCount(acceptedFriendsCount);
+                            Log.d("MainActivity", "Accepted friends count: " + acceptedFriendsCount);
+                        } else {
+                            updateFriendsCount(0);
+                        }
+                    } else {
+                        updateFriendsCount(0);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("MainActivity", "Error fetching friends", e);
+                    updateFriendsCount(0);
+                });
+
+        // Add a snapshot listener to keep the count updated in real-time
+        db.collection("users").document(userId)
+                .addSnapshotListener((documentSnapshot, error) -> {
+                    if (error != null) {
+                        Log.e("MainActivity", "Error listening for friend updates", error);
                         return;
                     }
-                    if (snapshot != null) {
-                        int count = snapshot.size();
-                        updateFriendsCount(count); // Cập nhật giao diện
+
+                    if (documentSnapshot != null && documentSnapshot.exists() && documentSnapshot.contains("friends")) {
+                        Map<String, Object> friendsMap = (Map<String, Object>) documentSnapshot.get("friends");
+                        if (friendsMap != null) {
+                            // Count only accepted friends
+                            int acceptedFriendsCount = 0;
+                            for (Map.Entry<String, Object> entry : friendsMap.entrySet()) {
+                                if ("accepted".equals(entry.getValue())) {
+                                    acceptedFriendsCount++;
+                                }
+                            }
+                            updateFriendsCount(acceptedFriendsCount);
+                        } else {
+                            updateFriendsCount(0);
+                        }
+                    } else {
+                        updateFriendsCount(0);
                     }
                 });
     }
@@ -193,11 +315,11 @@ public class MainActivity extends AppCompatActivity {
                     String avatarUrl = (String) resultData.get("secure_url");
                     if (avatarUrl != null && !avatarUrl.isEmpty()) {
                         Log.d("Cloudinary", "Upload successful: " + avatarUrl);
-                        updateAvatarUrl(avatarUrl); // Save the URL to Firestore
+                        updateAvatarUrl(avatarUrl);
                         Glide.with(MainActivity.this)
                             .load(avatarUrl)
                             .placeholder(R.drawable.person_24px)
-                            .into(imgProfile); // Update the ImageView
+                            .into(imgProfile);
                     } else {
                         Log.e("Cloudinary", "Upload successful but URL is empty");
                     }
@@ -246,4 +368,3 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 }
-
