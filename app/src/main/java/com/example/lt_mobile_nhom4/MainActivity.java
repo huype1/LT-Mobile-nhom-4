@@ -23,6 +23,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.cloudinary.android.MediaManager;
 import com.example.lt_mobile_nhom4.components.UserSearchFragment;
+import com.example.lt_mobile_nhom4.components.camera.CameraFragment;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.HashMap;
@@ -81,6 +82,13 @@ public class MainActivity extends AppCompatActivity {
             showNotification();
         }
 
+        // Add this to show camera fragment by default
+        if (savedInstanceState == null) {
+            CameraFragment cameraFragment = new CameraFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, cameraFragment)
+                    .commit();
+        }
     }
 
     private void openUserSearchFragment() {
