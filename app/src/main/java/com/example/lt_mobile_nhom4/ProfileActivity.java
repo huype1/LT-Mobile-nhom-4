@@ -120,6 +120,11 @@ public class ProfileActivity extends AppCompatActivity {
             openFriendListFragment();
         });
 
+        Button userGuideButton = findViewById(R.id.userGuideButton);
+        userGuideButton.setOnClickListener(v -> {
+            showUserGuide();
+        });
+
         deleteAccountButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.delete_account)
@@ -212,6 +217,14 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void showUserGuide() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.user_guide_title)
+            .setMessage(R.string.user_guide_content)
+            .setPositiveButton(R.string.ok, null)
+            .show();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -294,3 +307,4 @@ public class ProfileActivity extends AppCompatActivity {
             .addOnFailureListener(e -> Log.e("ProfileActivity", "Failed to update avatar URL", e));
     }
 }
+

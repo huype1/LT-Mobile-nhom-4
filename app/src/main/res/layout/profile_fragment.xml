@@ -292,6 +292,17 @@
                         android:text="@string/logout"
                         android:textColor="@color/text"
                         android:textSize="@dimen/_12ssp" />
+                    <Button
+                        android:id="@+id/userGuideButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10ssp"
+                        android:background="@drawable/background_item_bottom_sheet"
+                        android:fontFamily="@font/assets_fonts_proximasoft_proximasoftbold"
+                        android:padding="@dimen/_10sdp"
+                        android:text="@string/user_guide"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
                 </LinearLayout>
 
                 <LinearLayout
