@@ -1,204 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/bg">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/bg"
-        app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Main camera and controls section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <!-- Camera preview takes left side in landscape -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="@dimen/_200sdp"
-                    android:layout_weight="1"
-                    android:layout_marginTop="@dimen/_20sdp"
-                    android:layout_marginStart="@dimen/_20sdp"
-                    android:layout_marginEnd="@dimen/_10sdp"
-                    android:background="@drawable/background_camera"
-                    android:orientation="horizontal">
-
-                    <androidx.camera.view.PreviewView
-                        android:id="@+id/camera_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="visible" />
-
-                    <RelativeLayout
-                        android:id="@+id/image_view_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:id="@+id/image_view"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop" />
-
-                        <EditText
-                            android:id="@+id/text_add_message"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/_30sdp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_marginHorizontal="@dimen/_20sdp"
-                            android:layout_marginBottom="@dimen/_10sdp"
-                            android:background="@drawable/background_text"
-                            android:gravity="center"
-                            android:hint="Thêm một tin nhắn"
-                            android:textColor="@color/white"
-                            android:textColorHint="@color/white"
-                            android:visibility="visible" />
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <!-- Controls take right side in landscape -->
-                <LinearLayout
-                    android:id="@+id/linear_bottom_controller"
-                    android:layout_width="wrap_content"
+                <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/_20sdp"
-                    android:layout_marginEnd="@dimen/_20sdp"
-                    android:layout_marginStart="@dimen/_10sdp"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="@color/bg">
 
-                    <LinearLayout
-                        android:id="@+id/capture_setting"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="vertical"
-                        android:visibility="visible">
+                    <FrameLayout
+                        android:id="@+id/fragmentImageContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
 
-                        <ImageButton
-                            android:id="@+id/camera_flash"
-                            android:layout_width="@dimen/_45sdp"
-                            android:layout_height="@dimen/_45sdp"
-                            android:layout_gravity="center"
-                            android:layout_marginBottom="@dimen/_10sdp"
-                            android:background="@color/amp_transparent"
-                            android:contentDescription="@null"
-                            android:padding="@dimen/_5sdp"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/camera_flash_off" />
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="@dimen/_10sdp">
 
-                        <ImageButton
-                            android:id="@+id/camera_capture"
-                            android:layout_width="@dimen/_45sdp"
-                            android:layout_height="@dimen/_45sdp"
-                            android:layout_gravity="center"
-                            android:layout_marginBottom="@dimen/_10sdp"
-                            android:background="@color/amp_transparent"
-                            android:contentDescription="@null"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/camera_capture" />
+                        <!-- Camera Preview Container -->
+                        <FrameLayout
+                            android:id="@+id/camera_container"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/controls_container"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_percent="0.7">
 
-                        <ImageButton
-                            android:id="@+id/camera_flip"
-                            android:layout_width="@dimen/_45sdp"
-                            android:layout_height="@dimen/_45sdp"
-                            android:layout_gravity="center"
-                            android:background="@color/amp_transparent"
-                            android:contentDescription="@null"
-                            android:padding="@dimen/_5sdp"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/camera_flip" />
-                    </LinearLayout>
+                            <androidx.camera.view.PreviewView
+                                android:id="@+id/camera_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center" />
 
-                    <LinearLayout
-                        android:id="@+id/send_controller"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:visibility="gone">
+                            <RelativeLayout
+                                android:id="@+id/image_view_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:visibility="gone">
 
-                        <ImageButton
-                            android:id="@+id/image_cancel"
-                            android:layout_width="@dimen/_45sdp"
-                            android:layout_height="@dimen/_45sdp"
-                            android:layout_gravity="center"
-                            android:layout_marginBottom="@dimen/_20sdp"
-                            android:background="@color/amp_transparent"
-                            android:contentDescription="@null"
-                            android:padding="@dimen/_5sdp"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/camera_captured_cancel"
-                            app:tint="@color/white" />
+                                <ImageView
+                                    android:id="@+id/image_view"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="fitCenter" />
 
-                        <ImageButton
-                            android:id="@+id/image_send"
-                            android:layout_width="@dimen/_45sdp"
-                            android:layout_height="@dimen/_45sdp"
-                            android:background="@drawable/circle_mask"
-                            android:clipToOutline="true"
-                            android:src="@drawable/image_send_off" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
+                                <EditText
+                                    android:id="@+id/text_add_message"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentBottom="true"
+                                    android:layout_centerHorizontal="true"
+                                    android:layout_marginHorizontal="@dimen/_30sdp"
+                                    android:layout_marginBottom="@dimen/_10sdp"
+                                    android:background="@drawable/background_text"
+                                    android:gravity="center"
+                                    android:hint="@string/add_description"
+                                    android:padding="@dimen/_10sdp"
+                                    android:textColor="@color/white"
+                                    android:textColorHint="@color/white" />
+                            </RelativeLayout>
+                        </FrameLayout>
 
-            <!-- History controller on its own line below camera and controls -->
-            <LinearLayout
-                android:id="@+id/history_controller"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_10sdp"
-                android:layout_marginBottom="@dimen/_10sdp"
-                android:gravity="center"
-                android:orientation="vertical">
+                        <!-- Controls Container -->
+                        <LinearLayout
+                            android:id="@+id/controls_container"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/camera_container"
+                            app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Lịch sử"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/_16sdp" />
+                            <!-- Camera Controls -->
+                            <LinearLayout
+                                android:id="@+id/capture_setting"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:visibility="visible">
 
-                <ImageView
-                    android:layout_width="@dimen/_45sdp"
-                    android:layout_height="@dimen/_45sdp"
-                    android:layout_marginTop="@dimen/_5sdp"
-                    android:src="@drawable/history_down_arrow" />
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+                                <ImageButton
+                                    android:id="@+id/camera_flash"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:layout_marginBottom="@dimen/_10sdp"
+                                    android:background="@color/amp_transparent"
+                                    android:padding="@dimen/_5sdp"
+                                    android:scaleType="fitCenter"
+                                    android:src="@drawable/camera_flash_off" />
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                                <ImageButton
+                                    android:id="@+id/camera_capture"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:layout_marginBottom="@dimen/_10sdp"
+                                    android:background="@color/amp_transparent"
+                                    android:scaleType="fitCenter"
+                                    android:src="@drawable/camera_capture" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="@dimen/_16sdp">
+                                <ImageButton
+                                    android:id="@+id/camera_flip"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:background="@color/amp_transparent"
+                                    android:padding="@dimen/_5sdp"
+                                    android:scaleType="fitCenter"
+                                    android:src="@drawable/camera_flip" />
+                            </LinearLayout>
 
-            <!-- Single image as requested -->
-            <ImageView
-                android:layout_width="@dimen/_250sdp"
-                android:layout_height="@dimen/_200sdp"
-                android:scaleType="centerCrop" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+                            <!-- Send Controls -->
+                            <LinearLayout
+                                android:id="@+id/send_controller"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:visibility="gone">
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+                                <ImageButton
+                                    android:id="@+id/image_cancel"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:layout_marginBottom="@dimen/_20sdp"
+                                    android:background="@color/amp_transparent"
+                                    android:padding="@dimen/_5sdp"
+                                    android:scaleType="fitCenter"
+                                    android:src="@drawable/camera_captured_cancel"
+                                    app:tint="@color/white" />
+
+                                <ImageButton
+                                    android:id="@+id/image_send"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:background="@drawable/circle_mask"
+                                    android:clipToOutline="true"
+                                    android:src="@drawable/image_send_off" />
+                            </LinearLayout>
+
+                            <!-- History Button -->
+                            <LinearLayout
+                                android:id="@+id/history_controller"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/_20sdp"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/history"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/_14sdp" />
+
+                                <ImageView
+                                    android:id="@+id/arrow_back"
+                                    android:layout_width="@dimen/_40sdp"
+                                    android:layout_height="@dimen/_40sdp"
+                                    android:layout_marginTop="@dimen/_5sdp"
+                                    android:src="@drawable/history_down_arrow" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.coordinatorlayout.widget.CoordinatorLayout>

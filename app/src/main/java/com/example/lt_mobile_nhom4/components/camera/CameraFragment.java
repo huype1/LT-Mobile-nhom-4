@@ -1,7 +1,10 @@
 package com.example.lt_mobile_nhom4.components.camera;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -106,6 +109,7 @@ public class CameraFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_camera_and_view, container, false);
         previewView = view.findViewById(R.id.camera_view);
         cameraFlash = view.findViewById(R.id.camera_flash);
@@ -117,8 +121,11 @@ public class CameraFragment extends Fragment {
         sendButton = view.findViewById(R.id.image_send);
         cancelButton = view.findViewById(R.id.image_cancel);
         text = view.findViewById(R.id.text_add_message);
-//        recyclerView = view.findViewById(R.id.history_recycler_view); // RecyclerView trong layout
-//        recyclerView.setLayoutManager(layoutManager);
+
+
+        previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
+        previewView.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);
+
         return view;
     }
 
@@ -128,6 +135,7 @@ public class CameraFragment extends Fragment {
         cameraProviderListenableFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderListenableFuture.get();
+                cameraProvider.unbindAll();
 
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
@@ -140,8 +148,16 @@ public class CameraFragment extends Fragment {
                         .requireLensFacing(lensFacing)
                         .build();
 
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+                previewView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+                previewView.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);
+
+                cameraProvider.bindToLifecycle(
+                        getViewLifecycleOwner(),
+                        cameraSelector,
+                        preview,
+                        imageCapture
+                );
+
             } catch (ExecutionException | InterruptedException e) {
                 Log.e(TAG, "Khởi tạo camera lỗi", e);
             }
@@ -151,6 +167,9 @@ public class CameraFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+//        updatePreviewScale();
+        previewView.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);
 
         prefsManager = SharedPreferencesManager.getInstance(requireContext());
 
@@ -173,30 +192,6 @@ public class CameraFragment extends Fragment {
         setUpImageSend();
         cancelButton.setOnClickListener(v -> resetCamera());
 
-//        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-//        recyclerView.setAdapter(adapter);
-
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//
-//                int firstVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-//                int lastVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-//
-//                // Loop through the visible items and hide/show ImageViews based on scroll
-//                for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
-//                    View itemView = recyclerView.getLayoutManager().findViewByPosition(i);
-//                    if (itemView != null) {
-//                        ImageView imageView = itemView.findViewById(R.id.history_image); // ImageView trong item layout của RecyclerView
-//                        if (imageView != null && imageView.getVisibility() == View.INVISIBLE) {
-//                            imageView.setVisibility(View.VISIBLE); // Hiển thị ImageView khi cuộn đến item
-//                        }
-//                    }
-//                }
-//            }
-//        });
-
         LinearLayout historyController = view.findViewById(R.id.history_controller);
         historyController.setOnClickListener(v -> {
             // Create new fragment
@@ -207,7 +202,7 @@ public class CameraFragment extends Fragment {
 
             // Start transaction
             fragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, imageHistoryFragment) // Use main container
+                    .replace(R.id.fragmentImageContainer, imageHistoryFragment)
                     .addToBackStack(null) // Allow back navigation
                     .commit();
 
@@ -399,7 +394,6 @@ public class CameraFragment extends Fragment {
             }
         }
 
-        // User is authenticated, load user's images and friends' images
         db.collection("users").document(currentUserId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -484,6 +478,20 @@ public class CameraFragment extends Fragment {
                 });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (previewView.getVisibility() != View.VISIBLE) {
+            previewView.setVisibility(View.VISIBLE);
+            if (getView() != null) {
+                getView().findViewById(R.id.linear_bottom).setVisibility(View.VISIBLE);
+            }
+            startCamera();
+        }
+    }
+
+
     private void resetCamera() {
         previewView.setVisibility(View.VISIBLE);
         imageViewLayout.setVisibility(View.GONE);
@@ -491,6 +499,30 @@ public class CameraFragment extends Fragment {
         sendController.setVisibility(View.GONE);
         flashMode = ImageCapture.FLASH_MODE_OFF;
         startCamera();
+    }
+
+//    private void updatePreviewScale() {
+//        int orientation = getResources().getConfiguration().orientation;
+//        int rotation = requireActivity().getWindowManager().getDefaultDisplay().getRotation();
+//
+//        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            previewView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+//        } else {
+//            previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
+//        }
+//    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Màn hình được xoay ngang
+            // Xử lý các thay đổi cần thiết ở đây
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            // Màn hình được xoay dọc
+            // Xử lý các thay đổi cần thiết ở đây
+        }
     }
 
     @Override

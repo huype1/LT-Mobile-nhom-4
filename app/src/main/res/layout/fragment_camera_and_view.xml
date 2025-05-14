@@ -21,7 +21,6 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/_300sdp"
             android:layout_marginTop="@dimen/_45sdp"
-            android:background="@drawable/person_24px"
             android:orientation="vertical"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
@@ -181,13 +180,5 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
-
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/history_recycler_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="@dimen/_45sdp"-->
-<!--        android:nestedScrollingEnabled="false" />-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

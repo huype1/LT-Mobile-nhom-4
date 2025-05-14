@@ -75,7 +75,6 @@ public class ImageHistoryFragment extends Fragment {
         firebaseAuth = FirebaseAuth.getInstance();
         imageHistories = new ArrayList<>();
 
-        // Load image histories from Firestore
         loadImageHistory();
 
         return view;
@@ -88,8 +87,6 @@ public class ImageHistoryFragment extends Fragment {
         
         TextView btnDownload = dialog.findViewById(R.id.btn_save);
         TextView btnDelete = dialog.findViewById(R.id.btn_delete);
-        
-
         
         btnDownload.setOnClickListener(v -> {
             downloadCurrentImage();
@@ -204,7 +201,7 @@ public class ImageHistoryFragment extends Fragment {
         if (imageHistories != null && !imageHistories.isEmpty() && currentPosition < imageHistories.size()) {
             String imageUrl = imageHistories.get(currentPosition).getImageUrl();
             
-            // Create a timestamp for unique filename
+
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                     .format(new Date());
             String fileName = "IMG_" + timestamp + ".jpg";

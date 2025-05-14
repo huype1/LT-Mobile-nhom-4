@@ -89,7 +89,6 @@ public class ImageHistoryPagerAdapter extends RecyclerView.Adapter<ImageHistoryP
                     });
         }
 
-        // Set timestamp
         long currentTime = System.currentTimeMillis();
         long timeDiff = currentTime - imageHistory.getTimestamp();
         long hoursDiff = timeDiff / (60 * 60 * 1000);

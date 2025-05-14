@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             CameraFragment cameraFragment = new CameraFragment();
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainer, cameraFragment)
+                    .replace(R.id.fragmentImageContainer, cameraFragment)
                     .commit();
         }
 
