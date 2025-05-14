@@ -95,6 +95,7 @@ public class ProfileActivity extends AppCompatActivity {
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(this, AuthActivity.class);
             startActivity(intent);
+            stopService(new Intent(this, FriendImageListenerService.class));
             finish();
         });
 

@@ -3,6 +3,7 @@ package com.example.lt_mobile_nhom4.components.camera;
 import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -37,6 +38,7 @@ import com.bumptech.glide.Glide;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
+import com.example.lt_mobile_nhom4.HomeWidget;
 import com.example.lt_mobile_nhom4.MyApplication;
 import com.example.lt_mobile_nhom4.R;
 import com.example.lt_mobile_nhom4.components.ImageHistory;
@@ -45,11 +47,17 @@ import com.example.lt_mobile_nhom4.components.image_view.ImageHistoryFragment;
 import com.example.lt_mobile_nhom4.utils.SharedPreferencesManager;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -358,6 +366,42 @@ public class CameraFragment extends Fragment {
                             sendController.setVisibility(View.GONE);
                             text.setText("");
                         });
+                        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Lấy ID người dùng hiện tại
+
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                        db.collection("images")
+                                .whereEqualTo("userId", userId)
+                                .orderBy("createdAt", Query.Direction.DESCENDING)
+                                .limit(1)
+                                .get()
+                                .addOnSuccessListener(queryDocumentSnapshots -> {
+                                    if (!queryDocumentSnapshots.isEmpty()) {
+                                        DocumentSnapshot imageDoc = queryDocumentSnapshots.getDocuments().get(0);
+                                        String imageUrl = imageDoc.getString("image_url");
+                                        String description = imageDoc.getString("description");
+
+                                        // B2: Gửi ảnh cho bạn bè đã accept
+                                        db.collection("users")
+                                                .document(userId)
+                                                .get()
+                                                .addOnSuccessListener(documentSnapshot -> {
+                                                    if (documentSnapshot.exists()) {
+                                                        Map<String, Object> friendsMap = (Map<String, Object>) documentSnapshot.get("friends");
+                                                        if (friendsMap != null) {
+                                                            for (Map.Entry<String, Object> entry : friendsMap.entrySet()) {
+                                                                String friendId = entry.getKey();
+                                                                String status = String.valueOf(entry.getValue());
+                                                                if ("accepted".equals(status)) {
+                                                                    updateFriendWidget(friendId, imageUrl, description);  // ✅ Gửi ảnh
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                });
+                                    }
+                                });
+
                     }
 
                     @Override
@@ -537,6 +581,48 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    private void updateFriendWidget(String friendId, String imageUrl, String description) {
+        File storageDir = new File(requireContext().getFilesDir(), "widget_images");
+        if (!storageDir.exists()) storageDir.mkdirs();
+
+        File imageFile = new File(storageDir, "widget_" + friendId + ".jpg");
+
+        // Tải ảnh và lưu lại
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try (InputStream in = new URL(imageUrl).openStream()) {
+                Files.copy(in, imageFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                // Lưu đường dẫn ảnh vào SharedPreferences
+                requireContext().getSharedPreferences("widget_prefs", requireContext().MODE_PRIVATE)
+                        .edit()
+                        .putString("widget_image_path_" + friendId, imageFile.getAbsolutePath())
+                        .apply();
+
+                // Gửi broadcast để cập nhật widget ngay lập tức
+                Intent intent = new Intent(requireContext(), HomeWidget.class);
+                intent.setAction("com.example.lt_mobile_nhom4.UPDATE_WIDGET");
+                intent.putExtra("friendId", friendId);
+                intent.putExtra("description", description);
+                requireContext().sendBroadcast(intent);
+
+                Log.d(TAG, "Đã cập nhật widget cho " + friendId);
+            } catch (IOException e) {
+                Log.e(TAG, "Lỗi tải ảnh widget: " + e.getMessage(), e);
+            }
+        });
+        sendNewImageBroadcastToFriend(friendId, imageUrl, FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+    }
+
+    private void sendNewImageBroadcastToFriend(String friendId, String imageUrl, String senderName) {
+        Intent intent = new Intent("com.example.lt_mobile_nhom4.NEW_IMAGE_POSTED");
+        intent.putExtra("image_url", imageUrl);
+        intent.putExtra("sender_name", senderName);
+        intent.putExtra("friend_id", friendId);
+        requireContext().sendBroadcast(intent);
+    }
+
+
+
     private boolean allPermissionGranted() {
         for (String permission : REQUIRED_PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
@@ -545,4 +631,5 @@ public class CameraFragment extends Fragment {
         }
         return true;
     }
+
 }

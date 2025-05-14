@@ -2,8 +2,10 @@ package com.example.lt_mobile_nhom4.components;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -231,9 +233,6 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
         }).addOnSuccessListener(aVoid -> {
             searchProgressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-
-            sendFriendRequestReceivedNotification(user.getUsername());  // Gửi thông báo cho người nhận yêu cầu
-
             user.setFriendStatus(currentUserId, User.FriendStatus.PENDING_SENT);
             userAdapter.updateUser(user, position);
 
@@ -349,60 +348,49 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
     }
 
     private void createNotificationChannel() {
-        if (hasNotificationPermission()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hasNotificationPermission()) {
+            NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel existingChannel = notificationManager.getNotificationChannel("friend_requests");
+            if (existingChannel == null) {
                 CharSequence name = "Friend Requests";
                 String description = "Notifications for friend requests";
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
                 NotificationChannel channel = new NotificationChannel("friend_requests", name, importance);
                 channel.setDescription(description);
-
-                NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(NotificationManager.class);
                 notificationManager.createNotificationChannel(channel);
             }
-        } else {
-            requestNotificationPermission();
         }
     }
 
+
+
+    @SuppressLint("MissingPermission")
     private void sendFriendRequestReceivedNotification(String friendName) {
-        try {
-            String title = getString(R.string.friend_request_received_title);
-            String content = String.format(getString(R.string.friend_request_received_content), friendName);
+        if (!hasNotificationPermission()) return;  // <- Chỉ gửi nếu có quyền
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle(title)
-                    .setContentText(content)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Friend Request Received")
+                .setContentText(friendName + " sent you a friend request.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
 
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
-            notificationManager.notify(1, builder.build());
-
-        } catch (SecurityException e) {
-            Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
-        }
+        NotificationManagerCompat.from(requireContext()).notify(1001, builder.build());
     }
 
+
+    @SuppressLint("MissingPermission")
     private void sendFriendRequestAcceptedNotification(String friendName) {
-        try {
-            String title = getString(R.string.friend_request_accepted_title);
-            String content = String.format(getString(R.string.friend_request_accepted_content), friendName);
+        if (!hasNotificationPermission()) return;
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle(title)
-                    .setContentText(content)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "friend_requests")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Friend Request Accepted")
+                .setContentText(friendName + " accepted your friend request.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
 
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
-            notificationManager.notify(2, builder.build());
-
-        } catch (SecurityException e) {
-            Log.e("NotificationError", "Notification permission not granted: " + e.getMessage());
-        }
+        NotificationManagerCompat.from(requireContext()).notify(1002, builder.build());
     }
 
     private boolean hasNotificationPermission() {
@@ -418,33 +406,47 @@ public class UserSearchFragment extends Fragment implements UserAdapter.FriendRe
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
     }
+    private Map<String, String> previousFriendStatuses = new HashMap<>();
     private void setupFriendStatusListener(List<User> users) {
         if (currentUserId == null) return;
 
-        // Get a snapshot of the current user document for real-time updates
         firestore.collection("users").document(currentUserId)
                 .addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null || !snapshot.exists()) {
-                        return;
-                    }
+                    if (e != null || snapshot == null || !snapshot.exists()) return;
 
-                    Map<String, Object> friendsData =
-                            snapshot.contains("friends") ?
-                                    (Map<String, Object>) snapshot.get("friends") :
-                                    new HashMap<>();
+                    Map<String, Object> friendsData = snapshot.contains("friends")
+                            ? (Map<String, Object>) snapshot.get("friends")
+                            : new HashMap<>();
 
-                    // Update local users with latest friend status
                     for (int i = 0; i < users.size(); i++) {
                         User user = users.get(i);
-                        if (friendsData.containsKey(user.getId())) {
-                            String status = (String) friendsData.get(user.getId());
-                            user.setFriendStatus(currentUserId,
-                                    User.FriendStatus.fromString(status));
-                            userAdapter.updateUser(user, i);
+                        String userId = user.getId();
+                        String newStatus = friendsData.containsKey(userId) ? (String) friendsData.get(userId) : null;
+                        String oldStatus = previousFriendStatuses.get(userId);
+
+                        // So sánh và gửi thông báo phù hợp
+                        if (newStatus != null && !newStatus.equals(oldStatus)) {
+                            if ("pending_received".equals(newStatus) && (oldStatus == null || !"pending_received".equals(oldStatus))) {
+                                sendFriendRequestReceivedNotification(user.getUsername());
+                            } else if ("accepted".equals(newStatus) && "pending_sent".equals(oldStatus)) {
+                                sendFriendRequestAcceptedNotification(user.getUsername());
+                            }
                         }
+
+                        // Cập nhật lại trạng thái đã lưu
+                        if (newStatus != null) {
+                            previousFriendStatuses.put(userId, newStatus);
+                        } else {
+                            previousFriendStatuses.remove(userId);
+                        }
+
+                        // Cập nhật UI nếu có thay đổi
+                        user.setFriendStatus(currentUserId, User.FriendStatus.fromString(newStatus));
+                        userAdapter.updateUser(user, i);
                     }
                 });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
